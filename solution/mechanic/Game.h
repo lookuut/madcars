@@ -18,6 +18,7 @@ using namespace nlohmann;
 
 class Game {
 private:
+    tuple<list<cpShape *>,list<car_objects_type*>> match_objects;
 
     cpSpace* space = NULL;
     json config;
@@ -35,13 +36,13 @@ public:
 
     Game(json & config)  {
         this->config = config;
+        this->space = cpSpaceNew();
+
+        cpSpaceSetGravity(this->space, cpv(0.0, -700.0));
+        cpSpaceSetDamping(this->space, 0.85);
 
         this->players.push_back(new Player(1, max_match_count, true, true));
         this->players.push_back(new Player(2, max_match_count, false, true));
-
-        this->space = cpSpaceNew();
-        cpSpaceSetGravity(this->space, cpv(0.0, -700.0));
-        cpSpaceSetDamping(this->space, 0.85);
 
         this->next_match();
     }
@@ -61,8 +62,6 @@ public:
     void tick() {
         string input_string = "";
         getline(cin, input_string);
-
-        //LOG(INFO) << input_string;
 
         auto _config = nlohmann::json::parse(input_string);
 
@@ -90,11 +89,12 @@ public:
                 } else {
                     this->current_match->ticks_to_deadline--;
                 }
-                cpSpaceStep(this->current_match->get_space(), 0.016);
+                cpSpaceStep(this->space, 0.016);
             }
         }
 
         if (this->current_match->is_match_ended()) {
+            LOG(INFO) << "----------------------------------match ended";
             string input_string = "";
 
             getline(cin, input_string);
@@ -116,18 +116,43 @@ public:
 
     void clear_space(cpSpace* space){
 
-        cpSpaceEachShape(space, (cpSpaceShapeIteratorFunc)Game::EachShape, space);
-        cpSpaceEachBody(space, (cpSpaceBodyIteratorFunc)Game::EachBody, space);
-        cpSpaceEachConstraint(space, (cpSpaceConstraintIteratorFunc)Game::EachConstraint, space);
+        list<cpShape *> shapes_list = get<list<cpShape *>>(this->match_objects);
+
+        for (std::list<cpShape*>::iterator it = shapes_list.begin(); it != shapes_list.end(); ++it) {
+            cpSpaceRemoveShape(space, *it);
+        }
+
+        list<car_objects_type*> car_objects = get< list<car_objects_type*> >(match_objects);
+        for (std::list<car_objects_type*>::iterator it = car_objects.begin(); it != car_objects.end(); ++it) {
+
+            cpSpaceRemoveShape(space, (*it)->button_shape);
+            cpSpaceRemoveBody(space, (*it)->car_body);
+
+            cpSpaceRemoveShape(space, (*it)->car_shape);
+            cpSpaceRemoveBody(space, (*it)->rear_wheel_body);
+            cpSpaceRemoveBody(space, (*it)->front_wheel_body);
+
+            cpSpaceRemoveShape(space, (*it)->rear_wheel->wheel_shape);
+            cpSpaceRemoveConstraint(space, (*it)->rear_wheel->wheel_groove);
+            cpSpaceRemoveConstraint(space, (*it)->rear_wheel->wheel_damp);
+
+            cpSpaceRemoveShape(space, (*it)->front_wheel->wheel_shape);
+            cpSpaceRemoveConstraint(space, (*it)->front_wheel->wheel_groove);
+            cpSpaceRemoveConstraint(space, (*it)->front_wheel->wheel_damp);
+
+            for (std::list<cpConstraint *>::iterator motor = (*it)->motors.begin(); motor != (*it)->motors.end(); ++motor) {
+                cpSpaceRemoveConstraint(space, (*motor));
+            }
+        }
     }
 
     void next_match() {
-        this->clear_spaces();
 
+        clear_spaces();
         this->current_match = new Match(this->config, this->players, this->space, true);
-        tuple<list<cpShape *>,list<car_objects_type*>> match_objects  = this->current_match->get_object_for_space();
+        this->match_objects  = this->current_match->get_object_for_space();
 
-        list<cpShape *> shapes_list = get<list<cpShape *>>(match_objects);
+        list<cpShape *> shapes_list = get<list<cpShape *>>(this->match_objects);
 
 
         for (std::list<cpShape*>::iterator it = shapes_list.begin(); it != shapes_list.end(); ++it) {

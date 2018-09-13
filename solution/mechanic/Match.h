@@ -24,10 +24,8 @@ private:
     list<cpShape*> map_objects;
     list<car_objects_type*> car_objects;
 
-    list<Player> dead_players;
-
-
 public:
+    list<Player*> dead_players;
 
     Deadline * deadline;
     int ticks_to_deadline = Constants::TICKS_TO_DEADLINE;
@@ -50,7 +48,8 @@ public:
 
         if (apply_handler) {
             cpCollisionHandler * handler = cpSpaceAddWildcardHandler(space, allyCar->get_button_collision_type());
-            //handler->beginFunc =
+            handler->beginFunc = first_player_callback;
+            handler->userData = this;
         }
 
         this->players.front()->set_car(allyCar);
@@ -60,10 +59,31 @@ public:
 
         if (apply_handler) {
             cpCollisionHandler * handler = cpSpaceAddWildcardHandler(space, enemyCar->get_button_collision_type());
-            //handler->beginFunc =
+            handler->beginFunc = second_player_callback;
+            handler->userData = this;
         }
 
         this->players.back()->set_car(enemyCar);
+    }
+
+    static cpBool first_player_callback(cpArbiter *arb, cpSpace *space, cpDataPointer userData) {
+        Match * match = (Match*)userData;
+
+        if (!match->is_rest) {
+            match->dead_players.push_back(match->get_first_player());
+        }
+
+        return false;
+    }
+
+    static cpBool second_player_callback(cpArbiter *arb, cpSpace *space, cpDataPointer userData) {
+
+        Match * match = (Match*)userData;
+        if (!match->is_rest) {
+            match->dead_players.push_back(match->get_second_player());
+        }
+
+        return false;
     }
 
     ~Match() {
@@ -100,12 +120,21 @@ public:
     }
 
     bool is_match_ended() {
-        this->rest_counter == 0 && this->is_rest && this->smbd_die();
+        return this->rest_counter == 0 && this->is_rest && this->smbd_die();
     }
 
     cpSpace * get_space() {
         return this->space;
     }
+
+    Player * get_first_player() {
+        this->players.front();
+    }
+
+    Player * get_second_player() {
+        this->players.back();
+    }
+
 };
 
 

@@ -8,6 +8,8 @@
 
 #include <iostream>
 #include "../models/Car.h"
+#include <stdlib.h>     /* srand, rand */
+
 using namespace std;
 
 class Player {
@@ -22,6 +24,7 @@ private:
 public:
 
     bool is_ally;
+    string commands[3] = {"right", "left", "stop"};
 
     Player(int id, int lives, bool is_ally, bool is_original) {
         this->id = id;
@@ -29,6 +32,8 @@ public:
         this->is_ally = is_ally;
         this->is_original = is_original;
         this->car = NULL;
+
+        srand (time(NULL));
     }
 
     void set_car(Car * car) {
@@ -40,11 +45,20 @@ public:
 
             this->car->go_left();
 
+            /*
+            int pos = rand() % 3;
+            switch(pos) {
+
+                case 1 : this->car->go_right();
+                case 2 : this->car->stop();
+            }*/
 
             if (this->is_original) {
                 nlohmann::json command;
+                //command["command"] = commands[pos];
+                //command["debug"] = commands[pos];
                 command["command"] = "left";
-                command["debug"] = "";
+                command["debug"] = "left";
                 cout << command.dump() << endl;
             }
         } else {
