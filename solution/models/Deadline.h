@@ -1,0 +1,35 @@
+//
+// Created by lookuut on 09.09.18.
+//
+
+#ifndef MADCARS_DEADLINE_H
+#define MADCARS_DEADLINE_H
+
+#include "../../chipmunk_src/include/chipmunk/chipmunk_private.h"
+
+
+#define ASC 1
+#define DESC 2
+
+class Deadline {
+
+private:
+    cpShape * line;
+    short type;
+public:
+    Deadline();
+    Deadline(short type, double max_lenght, double max_height);
+
+    ~Deadline() {
+        delete this->line;
+    }
+
+    void move();
+
+    cpShape * get_object_for_space();
+
+    double get_position();
+};
+
+
+#endif //MADCARS_DEADLINE_H
