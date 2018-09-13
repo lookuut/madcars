@@ -136,17 +136,7 @@ public:
         cpShape * _shape1 = cpSpacePointQueryNearest(this->space, cpBodyGetPosition(this->rear_wheel_body), this->rear_wheel_radius + 1., cpShapeFilterNew(this->car_group, 0xffffffff, 0xffffffff), info1);
         cpShape * _shape2 = cpSpacePointQueryNearest(this->space, cpBodyGetPosition(this->front_wheel_body), this->front_wheel_radius + 1., cpShapeFilterNew(this->car_group, 0xffffffff, 0xffffffff), info2);
 
-        cpDataPointer shape_pointer1 = NULL;
-        if (_shape1 != NULL) {
-            shape_pointer1 = cpShapeGetUserData(_shape1);
-        }
-
-        cpDataPointer shape_pointer2 = NULL;
-        if (_shape2 != NULL) {
-            shape_pointer2 = cpShapeGetUserData(_shape2);
-        }
-
-        return (bool)!(shape_pointer1 || shape_pointer2);
+        return (bool)!(_shape1 || _shape2);
     }
 
     void go_right() {

@@ -24,7 +24,7 @@ private:
 public:
 
     bool is_ally;
-    string commands[3] = {"right", "left", "stop"};
+    string commands[3] = {"left", "right", "stop"};
 
     Player(int id, int lives, bool is_ally, bool is_original) {
         this->id = id;
@@ -43,22 +43,20 @@ public:
     void apply_turn(int tick) {
         if (this->is_ally) {
 
-            this->car->go_left();
-
-            /*
             int pos = rand() % 3;
             switch(pos) {
-
+                case 0 : this->car->go_left();
+                    break;
                 case 1 : this->car->go_right();
+                    break;
                 case 2 : this->car->stop();
-            }*/
+                    break;
+            }
 
             if (this->is_original) {
                 nlohmann::json command;
-                //command["command"] = commands[pos];
-                //command["debug"] = commands[pos];
-                command["command"] = "left";
-                command["debug"] = "left";
+                command["command"] = commands[pos];
+                command["debug"] = commands[pos];
                 cout << command.dump() << endl;
             }
         } else {
