@@ -9,6 +9,7 @@
 #include <iostream>
 #include "../models/Car.h"
 #include <stdlib.h>     /* srand, rand */
+#include <deque>
 
 using namespace std;
 
@@ -19,12 +20,15 @@ private:
     int lives;
     Car * car;
 
+    bool is_dead_at_match = false;
     bool is_original;
-
+    deque<short> command_queue;
 public:
 
     bool is_ally;
-    string commands[3] = {"left", "right", "stop"};
+
+    static const char* const commands[];
+    static const int max_command = 2;
 
     Player(int id, int lives, bool is_ally, bool is_original) {
         this->id = id;
@@ -33,7 +37,11 @@ public:
         this->is_original = is_original;
         this->car = NULL;
 
-        srand (time(NULL));
+        srand(time(NULL));
+    }
+
+    ~Player() {
+        delete car;
     }
 
     void set_car(Car * car) {
@@ -41,26 +49,19 @@ public:
     }
 
     void apply_turn(int tick) {
-        if (this->is_ally) {
 
-            int pos = rand() % 3;
-            switch(pos) {
-                case 0 : this->car->go_left();
-                    break;
-                case 1 : this->car->go_right();
-                    break;
-                case 2 : this->car->stop();
-                    break;
-            }
+        short step = pop_command();
 
-            if (this->is_original) {
-                nlohmann::json command;
-                command["command"] = commands[pos];
-                command["debug"] = commands[pos];
-                cout << command.dump() << endl;
-            }
-        } else {
-            this->car->stop();
+        switch (step) {
+            case 0:
+                this->get_car()->go_left();
+                break;
+            case 1:
+                this->get_car()->go_right();
+                break;
+            case 2:
+                this->get_car()->stop();
+                break;
         }
     }
 
@@ -84,7 +85,35 @@ public:
     int get_lives() {
         return this->lives;
     }
-};
 
+    void push_command(short command) {
+        command_queue.push_back(command);
+    }
+
+    short pop_command() {
+        cpAssertHard(command_queue.size() != 0, "Queue is empty");
+
+        short command = command_queue.front();
+        command_queue.pop_front();
+
+        return command;
+    }
+
+    void clear_command_queue() {
+        command_queue = deque<short>();
+    }
+
+    void set_dead(bool state) {
+        this->is_dead_at_match = state;
+    }
+
+    bool is_dead() {
+        return this->is_dead_at_match;
+    }
+
+    size_t command_queue_size() {
+        return this->command_queue.size();
+    }
+};
 
 #endif //MADCARS_PLAYER_H

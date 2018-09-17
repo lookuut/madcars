@@ -8,11 +8,11 @@
 #include <utility>"
 #include <iostream>
 
-Car::Car(json & car_config, int car_group, int direction, cpSpace *space) {
+Car::Car(const json & car_config, int car_group, int modification, cpSpace *space) {
     this->motors = list<cpConstraint*>();
     this->space = space;
     this->car_group = car_group;
-    this->x_modification = (direction == 0 ? 1 : -1);
+    this->x_modification = modification;
 
     this->car_body_poly = car_config["car_body_poly"].get<std::vector<vector<double>>>();
     this->car_body_mass = car_config["car_body_mass"].get<double>();
@@ -270,4 +270,27 @@ car_objects_type * Car::get_objects_for_space_at(cpVect point) {
     objects->motors = this->motors;
 
     return objects;
+}
+
+
+cpShape * Car::get_button_poly() {
+    return this->button_shape;
+}
+
+cpVect Car::to_world(const cpVect & vect) {
+
+    cpTransform transform = this->car_body->transform;
+
+    return cpTransformPoint(transform , vect);
+}
+
+vector<cpVect> * Car::get_button_world_coors() {
+    vector<cpVect> * transformed = new vector<cpVect>();
+
+    for (vector<vector<double>>::iterator it = button_poly.begin(); it != button_poly.end(); ++it) {
+        transformed->push_back(to_world(cpv((*it).at(0), (*it).at(1))) );
+    }
+
+
+    return transformed;
 }

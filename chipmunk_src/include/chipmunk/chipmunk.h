@@ -24,6 +24,8 @@
 
 #include <stdlib.h>
 #include <math.h>
+/////////////////////My boolshit !!!
+#include "madcars_allocator.h"
 
 #ifdef WIN32
 	// For alloca().
@@ -64,17 +66,17 @@ CP_EXPORT void cpMessage(const char *condition, const char *file, int line, int 
 
 #ifndef cpcalloc
 	/// Chipmunk calloc() alias.
-	#define cpcalloc calloc
+	#define cpcalloc madcars_allocator
 #endif
 
 #ifndef cprealloc
 	/// Chipmunk realloc() alias.
-	#define cprealloc realloc
+	#define cprealloc madcars_reallocator
 #endif
 
 #ifndef cpfree
 	/// Chipmunk free() alias.
-	#define cpfree free
+	#define cpfree madcars_free
 #endif
 
 typedef struct cpArray cpArray;

@@ -12,8 +12,6 @@
 #include <iostream>
 #include "../../../nlohmann/json.hpp"
 
-#include "../utils/easylogging++.h"
-
 
 using namespace nlohmann;
 using namespace std;
@@ -72,7 +70,7 @@ private:
 
     std::tuple<cpBody *, cpConstraint *, car_wheel_objects *> rear_wheel;
     std::tuple<cpBody *, cpConstraint *, car_wheel_objects *> front_wheel;
-    cpBody * rear_wheel_body;
+
     double rear_wheel_mass;
     double rear_wheel_radius;
     cpVect rear_wheel_position;
@@ -87,7 +85,6 @@ private:
     double rear_wheel_damp_damping;
     car_wheel_objects * rear_wheel_objects;
 
-    cpBody * front_wheel_body;
     double front_wheel_mass;
     double front_wheel_radius;
     cpVect front_wheel_position;
@@ -108,14 +105,21 @@ private:
 
 public:
     cpBody * car_body;
+    cpBody * front_wheel_body;
+    cpBody * rear_wheel_body;
 
     static const short FF = 1;
     static const short FR = 2;
     static const short AWD = 3;
 
-    Car(json & car_config, int car_group, int direction, cpSpace * space);
+    Car(const json & car_config, int car_group, int direction, cpSpace * space);
 
-    ~Car(){
+    ~Car() {
+        //delete std::get<car_wheel_objects *>(rear_wheel);
+        //delete std::get<car_wheel_objects *>(front_wheel);
+
+        delete rear_wheel_objects;
+        delete front_wheel_objects;
     }
 
     std::tuple<cpBody *, cpConstraint *, car_wheel_objects *> create_wheel(std::string wheel_side);
@@ -125,7 +129,7 @@ public:
     cpBody * create_car_body();
     cpShape * create_car_shape();
     cpShape * create_button_shape();
-    cpPolyShape * get_button_poly();
+    cpShape * get_button_poly();
     car_objects_type * get_objects_for_space_at(cpVect  point);
 
     bool in_air() {
@@ -171,6 +175,17 @@ public:
     short get_button_collision_type() {
         return this->button_collision_type;
     }
+
+    double get_incicline() {
+        cpVect l_rear_wheel_body_vec = cpBodyGetPosition(this->rear_wheel_body);
+
+        cpVect l_front_wheel_body_vec = cpBodyGetPosition(this->front_wheel_body);
+
+        return abs(l_rear_wheel_body_vec.y - l_front_wheel_body_vec.y);
+    }
+
+    cpVect to_world(const cpVect & vect);
+    vector<cpVect> * get_button_world_coors();
 };
 
 #endif //MADCARS_CAR_H

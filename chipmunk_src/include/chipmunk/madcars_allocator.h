@@ -5,45 +5,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define HEAP_MAX_SIZE 1024 * 1024
+#ifndef MADCARS_ACCLOCATOR_H
+#define MADCARS_ACCLOCATOR_H
 
-
-struct madcarsPointer {
-    void * mem_pointer;
-    long size;
-};
-
-typedef struct madcarsPointer madcarsPointer;
+#define HEAP_BUFF_SIZE_IN_BYTES 1024 * 1024
+#define BUFF_BLOCK_SIZE 4
 
 struct madcarsAllocator {
+    long size;
     long allocated_memory_pos;
     void * heap;
-    void * pointers;
 };
-
 typedef struct madcarsAllocator madcarsAllocator;
 
 
-madcarsAllocator mad_cars_heap = {0l, NULL};
+void * madcars_allocator(size_t nitems, size_t size);
+void madcars_free(void * ptr);
+void * madcars_reallocator(void * ptr, size_t nitems);
+madcarsAllocator * madcars_get_heap();
 
-void * madcars_allocator(size_t nitems, size_t size) {
-    extern madcarsAllocator mad_cars_heap;
-
-    if (mad_cars_heap.heap == NULL) {
-        mad_cars_heap.heap = calloc(8, HEAP_MAX_SIZE);
-    }
-    void * mem = (void*) ((char*)mad_cars_heap.heap + mad_cars_heap.allocated_memory_pos + 1);
-    mad_cars_heap.allocated_memory_pos += size * nitems;
-
-    return mem;
-}
-
-void my_free(void * ptr) {
-
-}
-
-void * madcars_reallocator(void * ptr, size_t nitems, size_t size) {
-    my_free(ptr);
-
-    return madcars_allocator(nitems, size);
-}
+#endif

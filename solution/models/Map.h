@@ -28,7 +28,7 @@ public:
     static constexpr double max_width = 1200.;
     static constexpr double max_height = 800.;
 
-    Map(json &segments, cpSpace *space) {
+    Map(const json &segments, cpSpace *space) {
         create_box(space);
 
         for (auto it = segments.begin(); it != segments.end(); ++it)
@@ -72,9 +72,11 @@ public:
     }
 
     ~Map() {
+        /* // no need to release cpShapes
         for (std::list<cpShape*>::iterator it = objects.begin(); it != objects.end(); ++it) {
             delete (*it);
-        }
+        } */
+
     }
 };
 

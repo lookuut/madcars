@@ -16,6 +16,9 @@ public:
     static const  int SEED = 1;
     static const  int REST_TICKS = 90;
     static const  int MAX_SPACES_COUNT = 1000;
+    static constexpr double SPACE_TICK = 0.016;
+    static const int SIMULATION_STEP_SIZE = 30;
+    static const int MAX_SIMULATION_DEEP = 120;
 };
 
 #endif //MADCARS_CONSTANS_H

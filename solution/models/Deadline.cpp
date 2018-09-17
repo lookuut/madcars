@@ -8,7 +8,16 @@ Deadline::Deadline(short type, double max_lenght, double max_height) {
     this->type = type;
 
     cpBody * body = cpBodyNewKinematic();
-    this->line = cpSegmentShapeNew(body, cpv(0, 0), cpv(max_lenght, 0), 2);
+
+    cpVect * polyVect = new cpVect[4];
+
+    polyVect[0] = cpv(0., 2.);
+    polyVect[1] = cpv(max_lenght, 2.);
+    polyVect[2] = cpv(max_lenght, -max_height);
+    polyVect[3] = cpv(0., -max_height);
+
+    this->line = cpPolyShapeNew(body, 4, polyVect, cpTransformNew(1, 0, 0, 1, 0, 0), 0.);
+
     cpShapeSetSensor(this->line, true);
     cpBodySetPosition(this->line->body, cpv(0,  ( type == ASC ? 10  : max_height - 10)));
 }

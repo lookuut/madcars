@@ -17,6 +17,7 @@ include_directories(chipmunk_src/include/chipmunk)
 include_directories(chipmunk_src/src)
 
 add_executable(madcars
+        chipmunk_src/include/chipmunk/madcars_allocator.h
         chipmunk_src/include/chipmunk/chipmunk.h
         chipmunk_src/include/chipmunk/chipmunk_ffi.h
         chipmunk_src/include/chipmunk/chipmunk_private.h
@@ -47,6 +48,7 @@ add_executable(madcars
         chipmunk_src/include/chipmunk/cpSpatialIndex.h
         chipmunk_src/include/chipmunk/cpTransform.h
         chipmunk_src/include/chipmunk/cpVect.h
+        chipmunk_src/src/madcars_allocator.c
         chipmunk_src/src/chipmunk.c
         chipmunk_src/src/cpArbiter.c
         chipmunk_src/src/cpArray.c
@@ -80,4 +82,4 @@ add_executable(madcars
         chipmunk_src/src/cpSpatialIndex.c
         chipmunk_src/src/cpSweep1D.c
         chipmunk_src/src/prime.h
-        solution/strategy.cpp solution/mechanic/Game.h solution/mechanic/Match.h solution/models/Deadline.cpp solution/models/Deadline.h solution/models/Map.h solution/InputParser.h solution/models/Car.cpp solution/models/Car.h solution/mechanic/Player.h solution/models/Constans.h solution/utils/easylogging++.cpp solution/utils/easylogging++.h solution/utils/ShapeCounter.h)
+        solution/strategy.cpp solution/mechanic/Game.h solution/mechanic/Match.h solution/models/Deadline.cpp solution/models/Deadline.h solution/models/Map.h solution/InputParser.h solution/models/Car.cpp solution/models/Car.h solution/mechanic/Player.h solution/models/Constans.h solution/utils/easylogging++.cpp solution/utils/easylogging++.h solution/utils/ShapeCounter.h solution/mechanic/Simulation.cpp solution/mechanic/Simulation.h solution/mechanic/CarState.cpp solution/mechanic/CarState.h solution/mechanic/Player.cpp solution/mechanic/SimVariance.cpp solution/mechanic/SimVariance.h solution/mechanic/InputSource.h)

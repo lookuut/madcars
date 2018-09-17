@@ -19,11 +19,6 @@ private:
 public:
     Deadline();
     Deadline(short type, double max_lenght, double max_height);
-
-    ~Deadline() {
-        delete this->line;
-    }
-
     void move();
 
     cpShape * get_object_for_space();
