@@ -17,7 +17,6 @@ include_directories(chipmunk_src/include/chipmunk)
 include_directories(chipmunk_src/src)
 
 add_executable(madcars
-        chipmunk_src/include/chipmunk/madcars_allocator.h
         chipmunk_src/include/chipmunk/chipmunk.h
         chipmunk_src/include/chipmunk/chipmunk_ffi.h
         chipmunk_src/include/chipmunk/chipmunk_private.h
@@ -48,6 +47,7 @@ add_executable(madcars
         chipmunk_src/include/chipmunk/cpSpatialIndex.h
         chipmunk_src/include/chipmunk/cpTransform.h
         chipmunk_src/include/chipmunk/cpVect.h
+        chipmunk_src/include/madcars_allocator.h
         chipmunk_src/src/madcars_allocator.c
         chipmunk_src/src/chipmunk.c
         chipmunk_src/src/cpArbiter.c

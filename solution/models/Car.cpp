@@ -110,7 +110,7 @@ std::tuple<cpBody *, cpConstraint *, car_wheel_objects*> Car::create_wheel(std::
     wheel_objects->wheel_shape = cpCircleShapeNew(wheel_body, wheel_radius, cpv(0, 0));
     cpShapeSetUserData(wheel_objects->wheel_shape, (cpDataPointer)ShapeCounter::getInstance().operator++());
 
-    cpShapeSetFilter(wheel_objects->wheel_shape, cpShapeFilterNew(this->car_group, 0xffffffff, 0xffffffff));
+    cpShapeSetFilter(wheel_objects->wheel_shape, cpShapeFilterNew(this->car_group, 4294967295, 4294967295));
 
     cpShapeSetFriction(wheel_objects->wheel_shape, wheel_friction);
     cpShapeSetElasticity(wheel_objects->wheel_shape, wheel_elasticity);
@@ -170,7 +170,7 @@ std::tuple<cpBody *, cpConstraint *, car_wheel_objects *> Car::create_square_whe
     cpBodySetPosition(wheel_body, cpv(wheel_position.x * this->x_modification, wheel_position.y));
 
     wheel_objects->wheel_shape = cpBoxShapeNew(wheel_body, wheel_radius * 2.0, wheel_radius * 2.0, 0);
-    cpShapeSetFilter(wheel_objects->wheel_shape, cpShapeFilterNew(this->car_group, 0xffffffff, 0xffffffff));
+    cpShapeSetFilter(wheel_objects->wheel_shape, cpShapeFilterNew(this->car_group, 4294967295, 4294967295));
 
     cpShapeSetFriction(wheel_objects->wheel_shape, wheel_friction);
     cpShapeSetElasticity(wheel_objects->wheel_shape, wheel_elasticity);
@@ -236,7 +236,7 @@ cpShape* Car::create_car_shape() {
 
     cpShapeSetFriction(shape, this->car_body_friction);
     cpShapeSetElasticity(shape, this->car_body_elasticity);
-    cpShapeSetFilter(shape, cpShapeFilterNew(this->car_group, 0xffffffff, 0xffffffff));
+    cpShapeSetFilter(shape, cpShapeFilterNew(this->car_group, 4294967295, 4294967295));
 
     return shape;
 }
@@ -245,7 +245,7 @@ cpShape * Car::create_button_shape() {
 
     cpShape * shape = cpPolyShapeNew(this->car_body, (int)this->button_poly.size(), this->processed_poly(this->button_poly), cpTransformNew(1,0,0,1,0,0), 0);
 
-    cpShapeSetFilter(shape, cpShapeFilterNew(this->car_group, 0xffffffff, 0xffffffff));
+    cpShapeSetFilter(shape, cpShapeFilterNew(this->car_group, 4294967295, 4294967295));
     cpShapeSetSensor(shape, true);
     cpShapeSetCollisionType(shape, this->button_collision_type);
 

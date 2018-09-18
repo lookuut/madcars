@@ -24,9 +24,6 @@ public:
     double s_front_wheel_body_y;
     double s_front_wheel_body_angle;
 
-    double button_x;
-    double button_y;
-
     vector<cpVect> * button_shape;
 public:
 
@@ -49,6 +46,22 @@ public:
 
     ~CarState() {
         delete this->button_shape;
+    }
+
+    CarState(const CarState &state) {
+        s_body_x = state.s_body_x;
+        s_body_y = state.s_body_y;
+
+        s_body_angle = state.s_body_angle;
+
+        s_rear_wheel_body_x = state.s_rear_wheel_body_x;
+        s_rear_wheel_body_y = state.s_rear_wheel_body_y;
+        s_rear_wheel_body_angle = state.s_rear_wheel_body_angle;
+
+        s_front_wheel_body_x = state.s_front_wheel_body_x;
+        s_front_wheel_body_y = state.s_front_wheel_body_y;
+        s_front_wheel_body_angle = state.s_front_wheel_body_angle;
+        //deep copy of vector
     }
 
     CarState(Car * car) {
@@ -90,7 +103,7 @@ public:
         delta += abs(s_rear_wheel_body_x - l_rear_wheel_body_vec.x) + abs(s_rear_wheel_body_y - l_rear_wheel_body_vec.y) + abs(s_rear_wheel_body_angle - l_rear_wheel_body_angle);
         delta += abs(s_front_wheel_body_x - l_front_wheel_body_vec.x) + abs(s_front_wheel_body_y - l_front_wheel_body_vec.y) + abs(s_front_wheel_body_angle - l_front_wheel_body_angle);
 
-        return delta == 0.;
+        return delta <= 0.;
     }
 
     double get_incicline() {

@@ -1,6 +1,6 @@
 
 #define RELEASE 1
-#define LOCAL_RUNNER 1
+//#define LOCAL_RUNNER 1
 //#define EMULATION 1
 //#define FILE_STREAM 1
 #include <bits/stdc++.h>
@@ -37,6 +37,10 @@ int main() {
 #endif
 
     Game game = Game();
+
+#ifdef RELEASE
+    InputSource input(input_stream_type::input_stream, false);
+#endif
 
 #ifdef LOCAL_RUNNER
     InputSource input(input_stream_type::input_stream, true);

@@ -27,6 +27,7 @@ private:
     list<cpShape*> map_objects;
     list<car_objects_type*> car_objects;
     Map * map;
+    list<Player*> players;
 public:
     list<Player*> dead_players;
 
@@ -37,46 +38,79 @@ public:
 
     Match();
 
-    Match(const json & world_config, const json & tick_config, Player * my_player, Player * enemy_player, cpSpace * space, bool apply_handler) {
+    Match(const json & world_config, const json & tick_config, list<Player*> players, Player * my_player, Player * enemy_player, cpSpace * space) {
         this->space = space;
         this->my_player = my_player;
         this->enemy_player = enemy_player;
+        this->players  = players;
 
         this->map = new Map(world_config["params"]["proto_map"]["segments"] , space);
         this->map_objects = map->get_objects_for_space();
         this->deadline = new Deadline(ASC, 1800, 800);
         this->map_objects.push_back(this->deadline->get_object_for_space());
 
-        Car * allyCar = new Car(world_config["params"]["proto_car"], 1, tick_config["params"]["my_car"][2].get<int>(), space);
+        int ally_modification = tick_config["params"]["my_car"][2].get<int>();
 
-        cpVect car_start_pos = cpv(tick_config["params"]["my_car"][0][0].get<double>(), tick_config["params"]["my_car"][0][1].get<double>());
-        car_objects.push_back(allyCar->get_objects_for_space_at(car_start_pos));
 
-        if (apply_handler) {
-            cpCollisionHandler * handler = cpSpaceAddWildcardHandler(space, allyCar->get_button_collision_type());
-            handler->beginFunc = first_player_callback;
-            handler->userData = this;
+
+        if (ally_modification == 1) {
+            Car * allyCar = new Car(world_config["params"]["proto_car"], 2, ally_modification, space);
+
+            cpVect ally_car_start_pos = cpv(tick_config["params"]["my_car"][0][0].get<double>(), tick_config["params"]["my_car"][0][1].get<double>());
+
+            this->my_player->set_car(allyCar);
+            this->my_player->clear_command_queue();
+            this->my_player->set_dead(false);
+
+            Car * enemyCar = new Car(world_config["params"]["proto_car"], 1, tick_config["params"]["enemy_car"][2].get<int>(), space);
+
+            cpVect enemy_car_start_pos = cpv(tick_config["params"]["enemy_car"][0][0].get<double>(), tick_config["params"]["enemy_car"][0][1].get<double>());
+
+
+            this->enemy_player->set_car(enemyCar);
+            this->enemy_player->clear_command_queue();
+            this->enemy_player->set_dead(false);
+
+
+            cpCollisionHandler * a_handler = cpSpaceAddWildcardHandler(space, allyCar->get_button_collision_type());
+            a_handler->beginFunc = first_player_callback;
+            a_handler->userData = this;
+
+            cpCollisionHandler * e_handler = cpSpaceAddWildcardHandler(space, enemyCar->get_button_collision_type());
+            e_handler->beginFunc = second_player_callback;
+            e_handler->userData = this;
+
+            car_objects.push_back(allyCar->get_objects_for_space_at(ally_car_start_pos));
+            car_objects.push_back(enemyCar->get_objects_for_space_at(enemy_car_start_pos));
+        } else {
+            Car * enemyCar = new Car(world_config["params"]["proto_car"], 1, tick_config["params"]["enemy_car"][2].get<int>(), space);
+
+            cpVect enemy_car_start_pos = cpv(tick_config["params"]["enemy_car"][0][0].get<double>(), tick_config["params"]["enemy_car"][0][1].get<double>());
+
+            this->enemy_player->set_car(enemyCar);
+            this->enemy_player->clear_command_queue();
+            this->enemy_player->set_dead(false);
+
+            Car * allyCar = new Car(world_config["params"]["proto_car"], 2, ally_modification, space);
+
+            cpVect ally_car_start_pos = cpv(tick_config["params"]["my_car"][0][0].get<double>(), tick_config["params"]["my_car"][0][1].get<double>());
+
+            this->my_player->set_car(allyCar);
+            this->my_player->clear_command_queue();
+            this->my_player->set_dead(false);
+
+
+            cpCollisionHandler * e_handler = cpSpaceAddWildcardHandler(space, enemyCar->get_button_collision_type());
+            e_handler->beginFunc = second_player_callback;
+            e_handler->userData = this;
+
+            cpCollisionHandler * a_handler = cpSpaceAddWildcardHandler(space, allyCar->get_button_collision_type());
+            a_handler->beginFunc = first_player_callback;
+            a_handler->userData = this;
+
+            car_objects.push_back(enemyCar->get_objects_for_space_at(enemy_car_start_pos));
+            car_objects.push_back(allyCar->get_objects_for_space_at(ally_car_start_pos));
         }
-
-        this->my_player->set_car(allyCar);
-        this->my_player->clear_command_queue();
-        this->my_player->set_dead(false);
-
-        Car * enemyCar = new Car(world_config["params"]["proto_car"], 2, tick_config["params"]["enemy_car"][2].get<int>(), space);
-
-        car_start_pos = cpv(tick_config["params"]["enemy_car"][0][0].get<double>(), tick_config["params"]["enemy_car"][0][1].get<double>());
-        car_objects.push_back(enemyCar->get_objects_for_space_at(car_start_pos));
-
-        if (apply_handler) {
-            cpCollisionHandler * handler = cpSpaceAddWildcardHandler(space, enemyCar->get_button_collision_type());
-            handler->beginFunc = second_player_callback;
-            handler->userData = this;
-        }
-
-        this->enemy_player->set_car(enemyCar);
-        this->enemy_player->clear_command_queue();
-        this->enemy_player->set_dead(false);
-
     }
 
 
@@ -119,8 +153,9 @@ public:
 
     void tick(int match_tick) {
 
-        apply_turn_wrapper(this->my_player, match_tick);
-        apply_turn_wrapper(this->enemy_player, match_tick);
+        for (std::list<Player*>::iterator it = players.begin(); it != players.end(); ++it) {
+            apply_turn_wrapper(*it, match_tick);
+        }
 
         if (match_tick >= Constants::TICKS_TO_DEADLINE) {
             this->deadline->move();
