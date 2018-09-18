@@ -39,7 +39,7 @@ public:
         if (type == input_stream_type::file_stream) {
             file_stream.open("bad-mad-cars.log");
         } else if (type == input_stream_type::emulation) {
-            ifstream visio_file("/home/lookuut/Downloads/visio");
+            ifstream visio_file("/home/lookuut/Downloads/visio (1)");
             string line;
             getline(visio_file, line);
             visio_file.close();
@@ -73,8 +73,8 @@ public:
                 nlohmann::json enemy_car_json;
                 nlohmann::json tick_json;
 
-                tick["params"]["my_car"] = tick["params"]["cars"]["2"];
                 tick["params"]["enemy_car"] = tick["params"]["cars"]["1"];
+                tick["params"]["my_car"] = tick["params"]["cars"]["2"];
             }
 
             input_string = tick.dump();

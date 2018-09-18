@@ -63,7 +63,7 @@ public:
 
     list<short> * synchronizedStates(list<short> *my_steps, list<CarState *> *enemy_states,
                                      list<short>::iterator &cur_step, list<CarState *>::iterator &cur_enemy_state,
-                                     Match *match, int tick, list<CarState *> *my_states, list<CarState *>::iterator &cur_my_state) {
+                                     Match *match, int tick) {
 
         list<short> * good_steps = new list<short>;
 
@@ -79,7 +79,7 @@ public:
             match->tick(tick);
             cpSpaceStep(match->get_space(), Constants::SPACE_TICK);
 
-            if ((*cur_my_state)->is_equal(my_player->get_car()) && (*cur_enemy_state)->is_equal(enemy_player->get_car())) {// Good sima
+            if ((*cur_enemy_state)->is_equal(enemy_player->get_car())) {// Good sima
 
                 if (std::next(cur_enemy_state) == enemy_states->end()) {//only one way found, okey thats good, then return
                     restore_heap();
@@ -92,7 +92,7 @@ public:
 
                 if (std::next(cur_enemy_state) != enemy_states->end()) {
                     list<short> * result = synchronizedStates(my_steps, enemy_states, ++cur_step, ++cur_enemy_state,
-                                                              match, tick + 1, my_states, ++cur_my_state);
+                                                              match, tick + 1);
                     if (result != NULL) {
                         result->push_front(step);
                         return result;
@@ -110,11 +110,6 @@ public:
         if (enemy_states->begin() != cur_enemy_state) {
             --cur_enemy_state;
         }
-
-        if (my_states->begin() != cur_my_state) {
-            --cur_my_state;
-        }
-
 
         delete good_steps;
         return NULL;

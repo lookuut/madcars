@@ -1,7 +1,7 @@
 
-#define RELEASE 1
+//#define RELEASE 1
 //#define LOCAL_RUNNER 1
-//#define EMULATION 1
+#define EMULATION 1
 //#define FILE_STREAM 1
 #include <bits/stdc++.h>
 #include <iostream>

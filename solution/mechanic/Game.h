@@ -35,12 +35,13 @@ private:
     Simulation simulation;
 
     list<CarState *> enemy_states;
-    list<CarState *> my_states;
+    //list<CarState *> my_states;
 
     list<short> my_future_steps;
     list<short> my_past_steps;
 
     int match_tick = 0;
+    int micro_sum = 0;
 
     list<Player*> players;
 
@@ -72,16 +73,15 @@ public:
             int micros = 0;
             system_clock::time_point start = system_clock::now();
 
-            CarState * my_car_state = new CarState(_config["params"]["my_car"]);
+            //CarState * my_car_state = new CarState(_config["params"]["my_car"]);
             CarState * enemy_car_state = new CarState(_config["params"]["enemy_car"]);
 
-            this->my_states.push_back(my_car_state);
+            //this->my_states.push_back(my_car_state);
             this->enemy_states.push_back(enemy_car_state);
 
             if (enemy_states.size() >= WAIT_STEP_SIZE) {// need synchronized
                 list<short>::iterator my_steps_iter = my_past_steps.begin();
                 list<CarState*>::iterator enemy_steps_iter = enemy_states.begin();
-                list<CarState*>::iterator my_states_iter = my_states.begin();
 
                 Player * f_player = this->current_match->get_my_player();
                 Player * s_player = this->current_match->get_enemy_player();
@@ -91,7 +91,7 @@ public:
                 //state of world on prev tick
                 list<short> * enemy_steps = simulation.synchronizedStates(&my_past_steps, &enemy_states,
                                                                           my_steps_iter, enemy_steps_iter,
-                                                                          current_match, 0, &my_states, my_states_iter);
+                                                                          current_match, 0);
                 if (enemy_steps == NULL) {
                     throw std::invalid_argument("Cant synchronized enemy steps");
                 }
@@ -107,14 +107,6 @@ public:
 
                 enemy_states = list<CarState*>();
                 enemy_states.push_back(state);
-
-
-                CarState * my_state = my_states.back();
-                my_states.pop_back();
-                my_states . remove_if ( deleteAll );
-
-                my_states = list<CarState*>();
-                my_states.push_back(my_state);
 
                 SimVariance * variant = NULL;
 
@@ -139,8 +131,8 @@ public:
             add_past_step(step);
 
             micros = std::chrono::duration_cast<std::chrono::microseconds>(system_clock::now() - start).count();
-
-            Game::send_command(step, "Tick " + to_string(this->tick_num) + " step " + Player::commands[step]  + " calculated in " + std::to_string(micros));
+            micro_sum += micros;
+            Game::send_command(step, "Tick " + to_string(this->tick_num) + " "+ std::to_string(micro_sum/1000000.0) + " step " + Player::commands[step]  + " calculated in " + std::to_string(micros));
 
             this->tick_num++;
             this->match_tick++;
@@ -194,14 +186,13 @@ public:
 
             list<short>::iterator my_steps_iter = this->my_past_steps.begin();
             list<CarState*>::iterator enemy_steps_iter = this->enemy_states.begin();
-            list<CarState*>::iterator my_states_iter = my_states.begin();
 
             this->my_player->clear_command_queue();
             this->enemy_player->clear_command_queue();
             //state of world on prev tick
             list<short> * enemy_steps = simulation.synchronizedStates(&my_past_steps, &enemy_states,
                                                                       my_steps_iter, enemy_steps_iter,
-                                                                      current_match, 0, &my_states, my_states_iter);
+                                                                      current_match, 0);
 
             this->my_player->push_command(my_past_steps.back());
             this->enemy_player->push_command(2);
@@ -256,13 +247,6 @@ public:
         if (enemy_states.size()) {
             enemy_states.remove_if(deleteAll);
         }
-
-        if (my_states.size()) {
-            my_states.remove_if(deleteAll);
-        }
-
-        enemy_states = list<CarState*>();
-        my_states = list<CarState*>();
 
         my_future_steps = list<short>();
         my_past_steps = list<short>();
