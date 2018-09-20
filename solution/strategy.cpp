@@ -1,6 +1,6 @@
 
-//#define RELEASE 1
-#define LOCAL_RUNNER 1
+#define RELEASE 1
+//#define LOCAL_RUNNER 1
 //#define EMULATION 1
 //#define FILE_STREAM 1
 #include <bits/stdc++.h>
@@ -122,7 +122,6 @@ int main() {
             }
 
         } catch (const std::exception& e) {
-
             auto input_json = nlohmann::json::parse(input_string);
             short smart_command = smart_guy(input_json);
 
@@ -157,7 +156,7 @@ int main() {
                 }
             }
 #ifdef LOCAL_RUNNER
-            //throw ;
+            throw ;
 #endif
         }
     }
