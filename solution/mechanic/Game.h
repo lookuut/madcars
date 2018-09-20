@@ -69,6 +69,7 @@ public:
 
     void tick(json & _config) {
 
+        string message = "";
         int micros = 0;
         system_clock::time_point start = system_clock::now();
 
@@ -94,10 +95,12 @@ public:
             simulation.run(this->current_match, my_player, enemy_player, list<short>(), &variant, this->match_tick, 0, &enemy_steps, enemy_steps_iter);
 
             if (variant == NULL) {//cannot find any variants
-                my_future_steps.push_back(10);
-                my_future_steps.push_back(10);
-                my_future_steps.push_back(10);
-                my_future_steps.push_back(10);
+                my_future_steps.push_back(1);
+                my_future_steps.push_back(0);
+                my_future_steps.push_back(1);
+                my_future_steps.push_back(0);
+                my_future_steps.push_back(1);
+                message += " cant find any variants";
             } else {
                 my_future_steps = variant->get_steps();
             }
@@ -108,7 +111,7 @@ public:
         micros = std::chrono::duration_cast<std::chrono::microseconds>(system_clock::now() - start).count();
         micro_sum += micros;
 
-        send_command(step, "Round = " + to_string(round) + " Tick " + to_string(this->match_tick) + " "+ std::to_string(micro_sum/1000000.0) + " step " + Player::commands[step]  + " calculated in " + std::to_string(micros));
+        send_command(step, "Round = " + to_string(round) + " Tick " + to_string(this->match_tick) + " "+ std::to_string(micro_sum/1000000.0) + " step " + Player::commands[step]  + " calculated in " + std::to_string(micros) + " : " + message);
 
         this->match_tick++;
     }
