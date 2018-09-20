@@ -18,23 +18,18 @@ private:
 
     int id;
     int lives;
-    Car * car;
 
     bool is_dead_at_match = false;
-    bool is_original;
     deque<short> command_queue;
 public:
 
-    bool is_ally;
+    Car * car;
 
     static const char* const commands[];
     static const int max_command = 2;
 
-    Player(int id, int lives, bool is_ally, bool is_original) {
+    Player(int id) {
         this->id = id;
-        this->lives = lives;
-        this->is_ally = is_ally;
-        this->is_original = is_original;
         this->car = NULL;
 
         srand(time(NULL));
@@ -51,8 +46,11 @@ public:
     void apply_turn(int tick) {
 
         short step = pop_command();
+        apply_command(step, tick);
+    }
 
-        switch (step) {
+    void apply_command(short command, int tick) {
+        switch (command) {
             case 0:
                 this->get_car()->go_left();
                 break;
@@ -73,21 +71,13 @@ public:
         this->id;
     }
 
-    int die() {
-        this->lives -= 1;
-    }
-
-
-    bool is_alive() {
-        return this->lives > 0;
-    }
-
-    int get_lives() {
-        return this->lives;
-    }
 
     void push_command(short command) {
         command_queue.push_back(command);
+    }
+
+    void press_command(short command) {
+        command_queue.push_front(command);
     }
 
     short pop_command() {

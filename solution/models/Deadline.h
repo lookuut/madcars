@@ -24,6 +24,9 @@ public:
     cpShape * get_object_for_space();
 
     double get_position();
+
+    static constexpr double deadline_height = 20;
+
 };
 
 

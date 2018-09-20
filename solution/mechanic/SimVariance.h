@@ -14,23 +14,29 @@ class SimVariance {
 public :
 
     std::list<short>  steps;
-    CarState * state;
+    CarState * my_state;
+    CarState * enemy_state;
     int tick = 0;
+    vector<int> * step_sizes;
 
-    SimVariance(CarState * state, std::list<short> steps, int tick){
-        this->state = state;
+    SimVariance(CarState * state, CarState * enemy_state, std::list<short> steps, int tick, vector<int> * step_sizes){
+        this->my_state = state;
+        this->enemy_state = enemy_state;
+
         this->steps = steps;
         this->tick = tick;
+        this->step_sizes = step_sizes;
     }
 
     ~SimVariance() {
-        delete state;
+        delete my_state;
+        delete enemy_state;
     }
 
     /**
      * is given state better then current
      */
-    bool is_weakness(int c_tick, Car *car) {
+    bool is_weakness(int c_tick, Car *car, Car * enemy_car) {
 
         if (this->tick > c_tick) {
             return true;
@@ -38,12 +44,12 @@ public :
             return false;
         }
 
-        cpVect velocity = cpBodyGetVelocity(car->car_body);
+        bool is_planning = car->is_planning();
 
 
         //remove this
         vector<cpVect> * c_button_coors = car->get_button_world_coors();
-        vector<cpVect> * button_coors = state->get_button_shape();
+        vector<cpVect> * button_coors = my_state->get_button_shape();
 
         cpAssertHard(button_coors != NULL, "button coors is null at sim variance");
 
@@ -63,17 +69,23 @@ public :
 
         delete c_button_coors;
 
-        return min_y->y < c_min_y->y;
+        double c_distance = cpvlength( cpvsub(cpBodyGetPosition(car->car_body), cpBodyGetPosition(enemy_car->car_body)));
+        double distance = cpvlength( cpvsub(my_state->body_pos, enemy_state->body_pos));
+
+        return (c_tick >= Constants::TICKS_TO_DEADLINE ? min_y->y < c_min_y->y : distance > c_distance);
     }
 
     list<short> get_steps() {
         list<short> future_steps;
+        int step_size_pos = 0;
 
-        for (std::list<short>::iterator it = steps.begin(); it != steps.end(); ++it) {
+        for (std::list<short>::iterator it = steps.begin(); it != steps.end(); ++it, step_size_pos++) {
 
-            for (int i = 0; i < Constants::SIMULATION_STEP_SIZE; i++) {
+            for (int i = 0; i < (*step_sizes)[step_size_pos]; i++) {
                 future_steps.push_back(*it);
             }
+
+
         }
 
         return future_steps;

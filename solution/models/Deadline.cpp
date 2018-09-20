@@ -13,8 +13,8 @@ Deadline::Deadline(short type, double max_lenght, double max_height) {
 
     polyVect[0] = cpv(0., 2.);
     polyVect[1] = cpv(max_lenght, 2.);
-    polyVect[2] = cpv(max_lenght, -max_height);
-    polyVect[3] = cpv(0., -max_height);
+    polyVect[2] = cpv(max_lenght, -Deadline::deadline_height);
+    polyVect[3] = cpv(0., -Deadline::deadline_height);
 
     this->line = cpPolyShapeNew(body, 4, polyVect, cpTransformNew(1, 0, 0, 1, 0, 0), 0.);
 

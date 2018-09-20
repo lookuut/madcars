@@ -54,17 +54,20 @@ private:
     vector<vector<double>>car_body_poly;
     vector<vector<double>>button_poly;
 
-    std::list<cpConstraint*> motors;
-
     double car_body_mass;
 
     double car_body_friction;
 
     double car_body_elasticity;
 
-    double max_speed;
+
     double max_angular_speed;
+
+public:
+    double max_speed;
     double torque;
+    std::list<cpConstraint*> motors;
+private:
     short drive;
 
 
@@ -143,6 +146,17 @@ public:
         return (bool)!(_shape1 || _shape2);
     }
 
+    bool is_planning() {
+
+        cpPointQueryInfo * info1 = new cpPointQueryInfo();
+        cpPointQueryInfo * info2 = new cpPointQueryInfo();
+
+        cpShape * _shape1 = cpSpacePointQueryNearest(this->space, cpBodyGetPosition(this->rear_wheel_body), this->rear_wheel_radius + 1., cpShapeFilterNew(this->car_group, 0xffffffff, 0xffffffff), info1);
+        cpShape * _shape2 = cpSpacePointQueryNearest(this->space, cpBodyGetPosition(this->front_wheel_body), this->front_wheel_radius + 1., cpShapeFilterNew(this->car_group, 0xffffffff, 0xffffffff), info2);
+
+        return (bool)!(_shape1 && _shape2);
+    }
+
     void go_right() {
 
         if (this->in_air()) {
@@ -155,7 +169,6 @@ public:
     }
 
     void go_left() {
-
         if (this->in_air()) {
             cpBodySetTorque(this->car_body, -this->torque);
         }
@@ -186,6 +199,19 @@ public:
 
     cpVect to_world(const cpVect & vect);
     vector<cpVect> * get_button_world_coors();
+
+    string to_string () {
+        cpVect l_body_vec = cpBodyGetPosition(car_body);
+        double l_body_angle = cpBodyGetAngle(car_body);
+
+        cpVect l_rear_wheel_body_vec = cpBodyGetPosition(rear_wheel_body);
+        double l_rear_wheel_body_angle = cpBodyGetAngle(rear_wheel_body);
+
+        cpVect l_front_wheel_body_vec = cpBodyGetPosition(front_wheel_body);
+        double l_front_wheel_body_angle = cpBodyGetAngle(front_wheel_body);
+
+        return std::to_string(l_body_vec.x) + " " + std::to_string(l_body_vec.y) + " " + std::to_string(l_body_angle);
+    }
 };
 
 #endif //MADCARS_CAR_H

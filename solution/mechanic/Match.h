@@ -46,7 +46,7 @@ public:
 
         this->map = new Map(world_config["params"]["proto_map"]["segments"] , space);
         this->map_objects = map->get_objects_for_space();
-        this->deadline = new Deadline(ASC, 1800, 800);
+        this->deadline = new Deadline(ASC, 1200, 800);
         this->map_objects.push_back(this->deadline->get_object_for_space());
 
         int ally_modification = tick_config["params"]["my_car"][2].get<int>();
@@ -145,6 +145,10 @@ public:
         return make_tuple(this->map_objects, this->car_objects);
     }
 
+    void clear_dead_players() {
+        dead_players = list<Player*>();
+    }
+
     void apply_turn_wrapper(Player * player, int tick) {
         if (!this->is_rest) {
             player->apply_turn(tick);
@@ -161,6 +165,7 @@ public:
             this->deadline->move();
         }
     }
+
 
     void deadline_move_tick(int match_tick) {
         if (match_tick >= Constants::TICKS_TO_DEADLINE) {

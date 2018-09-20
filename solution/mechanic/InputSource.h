@@ -37,9 +37,9 @@ public:
         }
 
         if (type == input_stream_type::file_stream) {
-            file_stream.open("bad-mad-cars.log");
+            file_stream.open("mad-cars-input.log");
         } else if (type == input_stream_type::emulation) {
-            ifstream visio_file("/home/lookuut/Downloads/visio (1)");
+            ifstream visio_file("/home/lookuut/Downloads/visio");
             string line;
             getline(visio_file, line);
             visio_file.close();
@@ -68,13 +68,8 @@ public:
             auto tick = test_steps[steps_counter];
 
             if (tick["type"].get<string>() == "tick") {
-
-                nlohmann::json my_car_json;
-                nlohmann::json enemy_car_json;
-                nlohmann::json tick_json;
-
-                tick["params"]["enemy_car"] = tick["params"]["cars"]["1"];
                 tick["params"]["my_car"] = tick["params"]["cars"]["2"];
+                tick["params"]["enemy_car"] = tick["params"]["cars"]["1"];
             }
 
             input_string = tick.dump();
