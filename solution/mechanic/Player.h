@@ -89,6 +89,10 @@ public:
         return command;
     }
 
+    short get_first_command() {
+        return command_queue.front();
+    }
+
     void clear_command_queue() {
         command_queue = deque<short>();
     }

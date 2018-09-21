@@ -14,24 +14,38 @@ class SimVariance {
 public :
 
     std::list<short>  steps;
+    std::list<CarState*> * step_states;
+
     CarState * my_state;
     CarState * enemy_state;
     int tick = 0;
     vector<int> * step_sizes;
 
-    SimVariance(CarState * state, CarState * enemy_state, std::list<short> steps, int tick, vector<int> * step_sizes){
+    SimVariance(CarState * state, CarState * enemy_state, std::list<short> steps, int tick, vector<int> * step_sizes, list<CarState*> * step_states){
         this->my_state = state;
         this->enemy_state = enemy_state;
 
         this->steps = steps;
         this->tick = tick;
         this->step_sizes = step_sizes;
+
+        this->step_states = new list<CarState*>();
+
+        for (std::list<CarState*>::iterator it = step_states->begin(); it != step_states->end(); ++it) {
+            if (*it != NULL) {
+                this->step_states->push_back( new CarState( **it ) );
+            }
+        }
     }
 
     ~SimVariance() {
         delete my_state;
         delete enemy_state;
+        step_states->remove_if(deleteAll);
+        delete step_states;
     }
+
+    static bool deleteAll( CarState * theElement ) { delete theElement; return true; }
 
     /**
      * is given state better then current
@@ -76,19 +90,11 @@ public :
     }
 
     list<short> get_steps() {
-        list<short> future_steps;
-        int step_size_pos = 0;
+        return steps;
+    }
 
-        for (std::list<short>::iterator it = steps.begin(); it != steps.end(); ++it, step_size_pos++) {
-
-            for (int i = 0; i < (*step_sizes)[step_size_pos]; i++) {
-                future_steps.push_back(*it);
-            }
-
-
-        }
-
-        return future_steps;
+    list<CarState*> * get_states() {
+        return this->step_states;
     }
 };
 

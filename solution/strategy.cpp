@@ -111,17 +111,21 @@ int main() {
                 auto cars_config = nlohmann::json::parse(tick_string);
 
                 game.next_match(input_json, cars_config);
+                game.forecast(-1);
 
-                for (int i = 0; i <= Constants::MATCH_START_WAIT_TICKS; i++) {
-                    game.add_future_step(Constants::MATCH_START_STEP);
-                }
-
-                game.send_command(Constants::MATCH_START_STEP, "First step");
+                game.send_command(game.get_first_step(), "First step");
             } else if (input_json["type"].get<string>() == "tick") {
                 game.tick(input_json);
             }
 
         } catch (const std::exception& e) {
+#ifdef LOCAL_RUNNER
+            throw ;
+#endif
+#ifdef FILE_STREAM
+            throw ;
+#endif
+
             auto input_json = nlohmann::json::parse(input_string);
             short smart_command = smart_guy(input_json);
 
@@ -155,9 +159,7 @@ int main() {
                     game.run_empty(smart_command);
                 }
             }
-#ifdef LOCAL_RUNNER
-            throw ;
-#endif
+
         }
     }
 

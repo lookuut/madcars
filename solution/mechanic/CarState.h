@@ -22,7 +22,7 @@ public:
     cpVect rear_wheel_pos;
     double rear_wheel_angle;
 
-    vector<cpVect> * button_shape;
+    vector<cpVect> * button_shape = NULL;
 public:
 
     CarState(json & car_state) {
@@ -34,13 +34,13 @@ public:
 
         front_wheel_pos = cpv(car_state[4][0].get<double>(), car_state[4][1].get<double>());
         front_wheel_angle = car_state[4][2].get<double>();
-
-        this->button_shape = NULL;
     }
 
 
     ~CarState() {
-        delete this->button_shape;
+        if (button_shape != NULL) {//memory leak
+            //delete button_shape;
+        }
     }
 
     CarState(const CarState &state) {
@@ -52,6 +52,13 @@ public:
 
         front_wheel_pos = state.front_wheel_pos;
         front_wheel_angle = state.front_wheel_angle;
+
+
+        if (button_shape != NULL) {
+            delete button_shape;
+        }
+
+        button_shape = new vector<cpVect>[state.button_shape->size()];
 
         *button_shape = *(state.button_shape);
     }

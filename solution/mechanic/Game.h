@@ -34,7 +34,7 @@ private:
     Simulation simulation;
 
     list<short> my_future_steps;
-    list<short> my_past_steps;
+    list<CarState*> * my_future_states = NULL;
 
     int match_tick = 0;
     int micro_sum = 0;
@@ -47,6 +47,7 @@ private:
     Match * current_match = NULL;
 
     list<short> enemy_steps;
+    list<short> future_enemy_steps;
 
     short my_lives;
     short enemy_lives;
@@ -63,50 +64,96 @@ public:
 
         cpSpaceSetGravity(this->space, cpv(0.0, -700.0));
         cpSpaceSetDamping(this->space, 0.85);
+
+        my_future_states = new list<CarState*>();
     }
 
     static bool deleteAll( CarState * theElement ) { delete theElement; return true; }
 
+private:
+    string message = "";
+public:
+
+    vector<int> default_step_size{40, 40 , 40 , 40, 40};
+    vector<int> in_danger_steps_sizes{15, 15, 15, 15};
+
+    int last_forecast_size = 0;
+
+    void forecast(int not_correct_tick) {
+
+        SimVariance * variant = NULL;
+
+        list<short>::iterator enemy_steps_iter = enemy_steps.begin();
+
+        list<CarState*>  * step_states = new list<CarState*>();
+
+        list<short> my_start_steps;
+        list<short> enemy_start_steps;
+
+        if (my_future_steps.size() > 0) {
+            my_player->push_command(get_first_step());
+            enemy_player->push_command(*enemy_steps_iter);
+
+            my_start_steps.push_back(get_first_step());
+            enemy_start_steps.push_back(*enemy_steps_iter);
+
+            ++enemy_steps_iter;
+        }
+
+        simulation.set_step_sizes( (not_correct_tick <= 0 ? default_step_size : in_danger_steps_sizes));
+        simulation.run(this->current_match, my_player, enemy_player, list<short>(), &variant, this->match_tick, 0, &enemy_steps, enemy_steps_iter, step_states, my_start_steps, enemy_start_steps);
+
+        #ifdef LOCAL_RUNNER
+        LOG(INFO) << "Simulation  " << variant->tick;
+        #endif
+
+        step_states->remove_if(deleteAll);
+        delete step_states;
+
+        if (my_future_states->size() > 0) {
+            my_future_states->remove_if(deleteAll);
+            delete my_future_states;
+        }
+
+        my_future_steps = variant->get_steps();
+        my_future_states = variant->get_states();
+        last_forecast_size = my_future_states->size();
+
+        future_enemy_steps = enemy_steps;
+
+    }
+
     void tick(json & _config) {
 
-        string message = "";
+        message = "";
+
         int micros = 0;
         system_clock::time_point start = system_clock::now();
 
         CarState * enemy_car_state = new CarState(_config["params"]["enemy_car"]);
         CarState my_car_state(_config["params"]["my_car"]);
 
+        if (match_tick >= 1) {
 
-        if (my_past_steps.size() >= 2) {
+            short prev_enemy_step = simulation.enemy_step_definer(get_first_step(), &my_car_state, enemy_car_state, current_match, this->match_tick, this->round);
+            first_step_applied();
 
-            short prev_enemy_step = simulation.enemy_step_definer(get_prev_step(), &my_car_state, enemy_car_state, current_match, this->match_tick, this->round);
             enemy_steps.push_back(prev_enemy_step);
 
             if (enemy_steps.size() >= 20) {
                 enemy_steps.pop_front();
             }
-        }
 
-        if (enemy_steps.size() > 10 && (this->match_tick % 10 == 0 || my_future_steps.size() == 0)) {
-            SimVariance * variant = NULL;
+            int not_correct_tick = simulation.check_future_steps(&my_future_steps, &future_enemy_steps, my_future_states, current_match, match_tick);
 
-            list<short>::iterator enemy_steps_iter = enemy_steps.begin();
-
-            simulation.run(this->current_match, my_player, enemy_player, list<short>(), &variant, this->match_tick, 0, &enemy_steps, enemy_steps_iter);
-
-            if (variant == NULL) {//cannot find any variants
-                my_future_steps.push_back(1);
-                my_future_steps.push_back(0);
-                my_future_steps.push_back(1);
-                my_future_steps.push_back(0);
-                my_future_steps.push_back(1);
-                message += " cant find any variants";
-            } else {
-                my_future_steps = variant->get_steps();
+            if (not_correct_tick < my_future_states->size() - 1) {
+                forecast(not_correct_tick);
+            } else if ((last_forecast_size > 100 && my_future_steps.size() < last_forecast_size / 2) || my_future_steps.size()  <= 1) {
+                forecast(-1);
             }
         }
 
-        short step = get_future_step();
+        short step = get_future_step_to_send();
 
         micros = std::chrono::duration_cast<std::chrono::microseconds>(system_clock::now() - start).count();
         micro_sum += micros;
@@ -157,22 +204,18 @@ public:
     void next_match(const json & world_config, const json & tick_config) {
 
         if (round > 0) {
+
             short cur_my_lives = my_lives = world_config["params"]["my_lives"].get<int>();
             short cur_enemy_lives = world_config["params"]["enemy_lives"].get<int>();
 
             short winner = (my_lives == cur_my_lives) ? 1 : ((enemy_lives == cur_enemy_lives) ? 2 : 0);
 
-            list<short> win_steps = simulation.win_definer(this->get_prev_step(2), winner, this->current_match, this->match_tick);
+            list<short> win_steps = simulation.win_definer(get_first_step(), winner, this->current_match, this->match_tick);
+            first_step_applied();
 
-            this->my_player->push_command(this->get_prev_step(2));
+            this->my_player->push_command(get_future_step_to_send());
             this->enemy_player->push_command(0);//boolshit ....
             this->current_match->tick(this->match_tick++);
-            cpSpaceStep(this->space, Constants::SPACE_TICK);
-
-            this->my_player->push_command(my_past_steps.back());
-            this->enemy_player->push_command(0);//boolshit ....
-            this->current_match->tick(this->match_tick++);
-
             cpSpaceStep(this->space, Constants::SPACE_TICK);
 
             this->current_match->rest_counter = Constants::REST_TICKS ;
@@ -185,6 +228,18 @@ public:
 
                 this->match_tick++;
             } while (this->current_match->rest_counter > 0);
+
+            if (my_future_steps.size() > 0) {
+                my_future_states->remove_if(deleteAll);
+                delete my_future_states;
+
+                my_future_steps = list<short>();
+                my_future_states = new list<CarState*>();
+
+            }
+
+            future_enemy_steps = list<short>();
+            enemy_steps = list<short>();
         }
 
         clear_spaces();
@@ -215,7 +270,6 @@ public:
         }
 
         my_future_steps = list<short>();
-        my_past_steps = list<short>();
 
         match_tick = 0;
         round++;
@@ -261,23 +315,19 @@ public:
         my_future_steps.push_back(step);
     }
 
-    short get_future_step() {
-        short step = my_future_steps.front();
+    short get_first_step() {
+        return my_future_steps.front();
+    }
+
+    void first_step_applied() {
         my_future_steps.pop_front();
-        return step;
+
+        my_future_states->pop_front();
+
     }
 
-
-    void add_past_step(short step) {
-        my_past_steps.push_back(step);
-    }
-
-    short get_prev_step(int pos_from_tail) {
-        return *(std::prev(my_past_steps.end(), pos_from_tail));
-    }
-
-    short get_prev_step() {
-        return *((my_past_steps.end().operator--()).operator--());
+    short get_future_step_to_send() {
+        return *(my_future_steps.begin().operator++());
     }
 
     static void addBodyToSpace(cpSpace * space, cpBody * body) {
@@ -293,9 +343,6 @@ public:
     }
 
     void send_command(const short command, const string & debug) {
-
-        add_past_step(command);
-
         nlohmann::json json_command;
 
         json_command["command"] = Player::commands[command];
