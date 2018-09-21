@@ -13,7 +13,8 @@
 #include "../../../nlohmann/json.hpp"
 #include "Player.h"
 #include "Match.h"
-#include "Simulation.h"
+#include "BaseSimulation.h"
+#include "FutureSimulation.h"
 
 #include <chipmunk/chipmunk_structs.h>
 #include <chrono>
@@ -31,7 +32,7 @@ private:
 
     int round = 0;
 
-    Simulation simulation;
+    BaseSimulation simulation;
 
     list<short> my_future_steps;
     list<CarState*> * my_future_states = NULL;
@@ -74,18 +75,14 @@ private:
     string message = "";
 public:
 
-    vector<int> default_step_size{40, 40 , 40 , 40, 40};
+    vector<int> default_step_size{20, 20 , 40 , 60, 60};
     vector<int> in_danger_steps_sizes{15, 15, 15, 15};
 
     int last_forecast_size = 0;
 
     void forecast(int not_correct_tick) {
 
-        SimVariance * variant = NULL;
-
         list<short>::iterator enemy_steps_iter = enemy_steps.begin();
-
-        list<CarState*>  * step_states = new list<CarState*>();
 
         list<short> my_start_steps;
         list<short> enemy_start_steps;
@@ -100,23 +97,24 @@ public:
             ++enemy_steps_iter;
         }
 
-        simulation.set_step_sizes( (not_correct_tick <= 0 ? default_step_size : in_danger_steps_sizes));
-        simulation.run(this->current_match, my_player, enemy_player, list<short>(), &variant, this->match_tick, 0, &enemy_steps, enemy_steps_iter, step_states, my_start_steps, enemy_start_steps);
+
+        FutureSimulation future_sim(this->current_match, &my_start_steps, &enemy_start_steps, &enemy_steps, this->match_tick);
+
+        future_sim.set_step_sizes((not_correct_tick <= 0 ? default_step_size : in_danger_steps_sizes));
+        future_sim.run();
 
         #ifdef LOCAL_RUNNER
-        LOG(INFO) << "Simulation  " << variant->tick;
+        LOG(INFO) << "Simulation  ";
         #endif
-
-        step_states->remove_if(deleteAll);
-        delete step_states;
 
         if (my_future_states->size() > 0) {
             my_future_states->remove_if(deleteAll);
             delete my_future_states;
         }
 
-        my_future_steps = variant->get_steps();
-        my_future_states = variant->get_states();
+
+        my_future_steps = future_sim.get_steps();;
+        my_future_states = future_sim.get_states();;
         last_forecast_size = my_future_states->size();
 
         future_enemy_steps = enemy_steps;
