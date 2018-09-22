@@ -31,11 +31,11 @@ private:
     int tick;
     int max_deep;
     list<short> max_win_count_commands;
-    list<CarState*> * command_states;
+    list<CarState*>  max_win_command_states;
 
     int max_win_count = -100000;
 
-    int recursive_run(
+    std::tuple<int, list<short>, list<CarState*>> recursive_run(
             list<short> steps,
             int tick,
             int deep,
@@ -56,15 +56,14 @@ public:
         this->enemy_start_commands = enemy_start_commands;
         this->enemy_steps = enemy_steps;
         this->tick = tick;
-        this->command_states = new list<CarState*>();
         this->max_deep = this->simulation_step_sizes.size();
-        this->command_states = new list<CarState*>();
+        this->max_win_command_states = list<CarState*>();
     }
 
     int run ();
 
     list<short> get_steps();
-    list<CarState*> * get_states();
+    list<CarState*> get_states();
 };
 
 

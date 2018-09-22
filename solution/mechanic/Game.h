@@ -35,7 +35,7 @@ private:
     BaseSimulation simulation;
 
     list<short> my_future_steps;
-    list<CarState*> * my_future_states = NULL;
+    list<CarState*> my_future_states;
 
     int match_tick = 0;
     int micro_sum = 0;
@@ -48,7 +48,6 @@ private:
     Match * current_match = NULL;
 
     list<short> enemy_steps;
-    list<short> future_enemy_steps;
 
     short my_lives;
     short enemy_lives;
@@ -65,8 +64,6 @@ public:
 
         cpSpaceSetGravity(this->space, cpv(0.0, -700.0));
         cpSpaceSetDamping(this->space, 0.85);
-
-        my_future_states = new list<CarState*>();
     }
 
     static bool deleteAll( CarState * theElement ) { delete theElement; return true; }
@@ -75,8 +72,8 @@ private:
     string message = "";
 public:
 
-    vector<int> default_step_size{20, 20 , 40 , 60, 60};
-    vector<int> in_danger_steps_sizes{15, 15, 15, 15};
+    vector<int> default_step_size{50, 50 ,50, 50};
+    vector<int> in_danger_steps_sizes{5, 10, 15};
 
     int last_forecast_size = 0;
 
@@ -97,28 +94,29 @@ public:
             ++enemy_steps_iter;
         }
 
+        list<short> inversed_enemy_steps = enemy_steps;
+        inversed_enemy_steps.reverse();
 
-        FutureSimulation future_sim(this->current_match, &my_start_steps, &enemy_start_steps, &enemy_steps, this->match_tick);
+        FutureSimulation future_sim(this->current_match, &my_start_steps, &enemy_start_steps, &inversed_enemy_steps, this->match_tick);
 
         future_sim.set_step_sizes((not_correct_tick <= 0 ? default_step_size : in_danger_steps_sizes));
+        //future_sim.set_step_sizes(default_step_size);
         future_sim.run();
 
         #ifdef LOCAL_RUNNER
         LOG(INFO) << "Simulation  ";
         #endif
 
-        if (my_future_states->size() > 0) {
-            my_future_states->remove_if(deleteAll);
-            delete my_future_states;
+        if (my_future_states.size() > 0) {
+            my_future_states.remove_if(deleteAll);
+            my_future_states = list<CarState*>();
         }
 
 
         my_future_steps = future_sim.get_steps();;
-        my_future_states = future_sim.get_states();;
-        last_forecast_size = my_future_states->size();
+        my_future_states = future_sim.get_states();
 
-        future_enemy_steps = enemy_steps;
-
+        last_forecast_size = my_future_states.size();
     }
 
     void tick(json & _config) {
@@ -138,13 +136,15 @@ public:
 
             enemy_steps.push_back(prev_enemy_step);
 
-            if (enemy_steps.size() >= 20) {
+            if (enemy_steps.size() >= 50) {
                 enemy_steps.pop_front();
             }
 
-            int not_correct_tick = simulation.check_future_steps(&my_future_steps, &future_enemy_steps, my_future_states, current_match, match_tick);
+            list<short> inversed_enemy_steps = enemy_steps;
+            inversed_enemy_steps.reverse();
+            int not_correct_tick = simulation.check_future_steps(&my_future_steps, &inversed_enemy_steps, &my_future_states, current_match, match_tick);
 
-            if (not_correct_tick < my_future_states->size() - 1) {
+            if (not_correct_tick < my_future_states.size() - 1) {
                 forecast(not_correct_tick);
             } else if ((last_forecast_size > 100 && my_future_steps.size() < last_forecast_size / 2) || my_future_steps.size()  <= 1) {
                 forecast(-1);
@@ -228,15 +228,12 @@ public:
             } while (this->current_match->rest_counter > 0);
 
             if (my_future_steps.size() > 0) {
-                my_future_states->remove_if(deleteAll);
-                delete my_future_states;
+                my_future_states.remove_if(deleteAll);
+                my_future_states = list<CarState*>();
 
                 my_future_steps = list<short>();
-                my_future_states = new list<CarState*>();
-
             }
 
-            future_enemy_steps = list<short>();
             enemy_steps = list<short>();
         }
 
@@ -320,7 +317,7 @@ public:
     void first_step_applied() {
         my_future_steps.pop_front();
 
-        my_future_states->pop_front();
+        my_future_states.pop_front();
 
     }
 

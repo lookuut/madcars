@@ -98,6 +98,7 @@ int BaseSimulation::check_future_steps (list<short> * steps, list<short> * enemy
             break;
         }
 
+        ++enemy_step_iter;
         not_correct_tick++;
         ++state_iter;
         ++step_iter;
