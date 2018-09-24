@@ -52,7 +52,7 @@ handlerSetEql(cpCollisionHandler *check, cpCollisionHandler *pair)
 static void *
 handlerSetTrans(cpCollisionHandler *handler, void *unused)
 {
-	cpCollisionHandler *copy = (cpCollisionHandler *)cpcalloc(1, sizeof(cpCollisionHandler));
+	cpCollisionHandler *copy = (cpCollisionHandler *) cpcalloc(1, sizeof(cpCollisionHandler));
 	memcpy(copy, handler, sizeof(cpCollisionHandler));
 	
 	return copy;
@@ -113,7 +113,7 @@ static void FreeWrap(void *ptr, void *unused){cpfree(ptr);}
 cpSpace *
 cpSpaceAlloc(void)
 {
-	return (cpSpace *)cpcalloc(1, sizeof(cpSpace));
+	return (cpSpace *) cpcalloc(1, sizeof(cpSpace));
 }
 
 cpSpace*

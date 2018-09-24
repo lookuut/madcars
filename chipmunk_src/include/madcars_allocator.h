@@ -11,17 +11,17 @@
 #define HEAP_BUFF_SIZE_IN_BYTES 1024 * 1024
 #define BUFF_BLOCK_SIZE 4
 
-struct madcarsAllocator {
+struct madcars_allocator {
     long size;
     long allocated_memory_pos;
     void * heap;
 };
-typedef struct madcarsAllocator madcarsAllocator;
+typedef struct madcars_allocator madcars_allocator;
 
 
-void * madcars_allocator(size_t nitems, size_t size);
+void * madcars_alloc(size_t nitems, size_t size);
 void madcars_free(void * ptr);
-void * madcars_reallocator(void * ptr, size_t nitems);
-madcarsAllocator * madcars_get_heap();
+void * madcars_realloc(void *ptr, size_t nitems);
+madcars_allocator * madcars_get_heap();
 
 #endif

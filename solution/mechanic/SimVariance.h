@@ -52,11 +52,12 @@ public :
      */
     bool is_weakness(int c_tick, Car *car, Car * enemy_car) {
 
+        /*
         if (this->tick > c_tick) {
             return true;
         } else if (this->tick < c_tick) {
             return false;
-        }
+        }*/
 
         bool is_planning = car->is_planning();
 
@@ -86,7 +87,8 @@ public :
         double c_distance = cpvlength( cpvsub(cpBodyGetPosition(car->car_body), cpBodyGetPosition(enemy_car->car_body)));
         double distance = cpvlength( cpvsub(my_state->body_pos, enemy_state->body_pos));
 
-        return (c_tick >= Constants::TICKS_TO_DEADLINE ? min_y->y < c_min_y->y : distance > c_distance);
+        return min_y->y < c_min_y->y;
+        //return (c_tick >= Constants::TICKS_TO_DEADLINE ? min_y->y < c_min_y->y : distance > c_distance);
     }
 
     list<short> get_steps() {

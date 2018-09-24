@@ -119,7 +119,7 @@ public:
         last_forecast_size = my_future_states.size();
     }
 
-    void tick(json & _config) {
+    json & tick(json & _config) {
 
         message = "";
 
@@ -151,6 +151,10 @@ public:
             }
         }
 
+
+#ifdef LOCAL_RUNNER
+        LOG(INFO) << "heap size at tick " << this->match_tick << " "<< simulation.get_heap_size();
+#endif
         short step = get_future_step_to_send();
 
         micros = std::chrono::duration_cast<std::chrono::microseconds>(system_clock::now() - start).count();
@@ -173,28 +177,48 @@ public:
 
         for (std::list<cpShape*>::iterator it = shapes_list.begin(); it != shapes_list.end(); ++it) {
             cpSpaceRemoveShape(space, *it);
+            cpShapeFree(*it);
         }
 
         list<car_objects_type*> car_objects = get< list<car_objects_type*> >(match_objects);
         for (std::list<car_objects_type*>::iterator it = car_objects.begin(); it != car_objects.end(); ++it) {
 
             cpSpaceRemoveShape(space, (*it)->button_shape);
+            cpShapeFree((*it)->button_shape);
+
             cpSpaceRemoveBody(space, (*it)->car_body);
+            cpBodyFree((*it)->car_body);
 
             cpSpaceRemoveShape(space, (*it)->car_shape);
+            cpShapeFree((*it)->car_shape);
+
             cpSpaceRemoveBody(space, (*it)->rear_wheel_body);
+            cpBodyFree((*it)->rear_wheel_body);
+
             cpSpaceRemoveBody(space, (*it)->front_wheel_body);
+            cpBodyFree((*it)->front_wheel_body);
 
             cpSpaceRemoveShape(space, (*it)->rear_wheel->wheel_shape);
+            cpShapeFree((*it)->rear_wheel->wheel_shape);
+
             cpSpaceRemoveConstraint(space, (*it)->rear_wheel->wheel_groove);
+            cpConstraintFree((*it)->rear_wheel->wheel_groove);
+
             cpSpaceRemoveConstraint(space, (*it)->rear_wheel->wheel_damp);
+            cpConstraintFree((*it)->rear_wheel->wheel_damp);
 
             cpSpaceRemoveShape(space, (*it)->front_wheel->wheel_shape);
+            cpShapeFree((*it)->front_wheel->wheel_shape);
+
             cpSpaceRemoveConstraint(space, (*it)->front_wheel->wheel_groove);
+            cpConstraintFree((*it)->front_wheel->wheel_groove);
+
             cpSpaceRemoveConstraint(space, (*it)->front_wheel->wheel_damp);
+            cpConstraintFree((*it)->front_wheel->wheel_damp);
 
             for (std::list<cpConstraint *>::iterator motor = (*it)->motors.begin(); motor != (*it)->motors.end(); ++motor) {
                 cpSpaceRemoveConstraint(space, (*motor));
+                cpConstraintFree((*motor));
             }
         }
     }
@@ -238,6 +262,7 @@ public:
         }
 
         clear_spaces();
+
 
         if (my_player != NULL) {
             delete my_player;

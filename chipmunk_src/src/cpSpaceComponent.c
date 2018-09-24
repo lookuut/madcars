@@ -98,7 +98,7 @@ cpSpaceDeactivateBody(cpSpace *space, cpBody *body)
 			
 			// Save contact values to a new block of memory so they won't time out
 			size_t bytes = arb->count*sizeof(struct cpContact);
-			struct cpContact *contacts = (struct cpContact *)cpcalloc(1, bytes);
+			struct cpContact *contacts = (struct cpContact *) cpcalloc(1, bytes);
 			memcpy(contacts, arb->contacts, bytes);
 			arb->contacts = contacts;
 		}

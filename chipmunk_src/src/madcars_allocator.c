@@ -7,10 +7,10 @@
 #include <memory.h>
 #include "madcars_allocator.h"
 
-madcarsAllocator mad_cars_heap = {0l, 0l, NULL};
+madcars_allocator mad_cars_heap = {0l, 0l, NULL};
 
-void * madcars_allocator(size_t nitems, size_t size) {
-    extern madcarsAllocator mad_cars_heap;
+void * madcars_alloc(size_t nitems, size_t size) {
+    extern madcars_allocator mad_cars_heap;
 
     long mem_size = size * nitems;
 
@@ -31,16 +31,16 @@ void * madcars_allocator(size_t nitems, size_t size) {
 void madcars_free(void * ptr) {
 }
 
-void * madcars_reallocator(void * ptr, size_t nitems) {
+void * madcars_realloc(void *ptr, size_t nitems) {
 
-    void * new_mem = madcars_allocator(nitems, 1);
+    void * new_mem = madcars_alloc(nitems, 1);
 
     memcpy(new_mem, ptr, nitems);
 
     return new_mem;
 }
 
-madcarsAllocator * madcars_get_heap() {
-    extern madcarsAllocator mad_cars_heap;
+madcars_allocator * madcars_get_heap() {
+    extern madcars_allocator mad_cars_heap;
     return &mad_cars_heap;
 }

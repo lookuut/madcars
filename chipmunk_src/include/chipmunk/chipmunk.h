@@ -66,12 +66,12 @@ CP_EXPORT void cpMessage(const char *condition, const char *file, int line, int 
 
 #ifndef cpcalloc
 	/// Chipmunk calloc() alias.
-	#define cpcalloc madcars_allocator
+	#define cpcalloc madcars_alloc
 #endif
 
 #ifndef cprealloc
 	/// Chipmunk realloc() alias.
-	#define cprealloc madcars_reallocator
+	#define cprealloc madcars_realloc
 #endif
 
 #ifndef cpfree
@@ -160,7 +160,7 @@ CP_EXPORT cpFloat cpMomentForBox(cpFloat m, cpFloat width, cpFloat height);
 
 /// Calculate the moment of inertia for a solid box.
 CP_EXPORT cpFloat cpMomentForBox2(cpFloat m, cpBB box);
-
+void madcars_release();
 /// Calculate the convex hull of a given set of points. Returns the count of points in the hull.
 /// @c result must be a pointer to a @c cpVect array with at least @c count elements. If @c verts == @c result, then @c verts will be reduced inplace.
 /// @c first is an optional pointer to an integer to store where the first vertex in the hull came from (i.e. verts[first] == result[0])

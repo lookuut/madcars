@@ -9,7 +9,11 @@
 #include <chipmunk/chipmunk_structs.h>
 #include "Match.h"
 #include "CarState.h"
-#include <madcars_allocator.h>
+
+extern "C" {
+    #include "madcars_allocator.h"
+};
+
 #include "SimVariance.h"
 #include <algorithm>    // std::max
 
@@ -23,12 +27,12 @@ typedef struct md_heap_state md_heap_state;
 class BaseSimulation {
 private:
 
-    madcarsAllocator * heap;
+    madcars_allocator * heap;
 
     list<md_heap_state> copies;
 
-    madcarsAllocator * get_heap() {
-        extern madcarsAllocator mad_cars_heap;
+    madcars_allocator * get_heap() {
+        extern madcars_allocator mad_cars_heap;
         return &mad_cars_heap;
     }
 
@@ -98,6 +102,10 @@ public:
     short enemy_step_definer(short my_prev_command, CarState *my_state, CarState *enemy_state, Match *match, int tick, int round);
 
     int check_future_steps (list<short> * steps, list<short> * enemy_steps, list<CarState*> *states, Match * match, int tick);
+
+    size_t get_heap_size() {
+        return heap->allocated_memory_pos;
+    }
 };
 
 
