@@ -140,10 +140,21 @@ public:
         cpPointQueryInfo * info1 = new cpPointQueryInfo();
         cpPointQueryInfo * info2 = new cpPointQueryInfo();
 
-        cpShape * _shape1 = cpSpacePointQueryNearest(this->space, cpBodyGetPosition(this->rear_wheel_body), this->rear_wheel_radius + 1., cpShapeFilterNew(this->car_group, 0xffffffff, 0xffffffff), info1);
-        cpShape * _shape2 = cpSpacePointQueryNearest(this->space, cpBodyGetPosition(this->front_wheel_body), this->front_wheel_radius + 1., cpShapeFilterNew(this->car_group, 0xffffffff, 0xffffffff), info2);
+        cpShapeFilter filter1 = cpShapeFilterNew(this->car_group, 0xffffffff, 0xffffffff);
+        cpShapeFilter filter2 = cpShapeFilterNew(this->car_group, 0xffffffff, 0xffffffff);
 
-        return (bool)!(_shape1 || _shape2);
+        cpShape * _shape1 = cpSpacePointQueryNearest(this->space, cpBodyGetPosition(this->rear_wheel_body), this->rear_wheel_radius + 1., filter1, info1);
+        cpShape * _shape2 = cpSpacePointQueryNearest(this->space, cpBodyGetPosition(this->front_wheel_body), this->front_wheel_radius + 1., filter2, info2);
+
+        delete info1;
+        delete info2;
+
+        bool result = (bool)!(_shape1 || _shape2);
+
+        cpShapeFree(_shape1);
+        cpShapeFree(_shape2);
+
+        return result;
     }
 
     bool is_planning() {
@@ -154,7 +165,15 @@ public:
         cpShape * _shape1 = cpSpacePointQueryNearest(this->space, cpBodyGetPosition(this->rear_wheel_body), this->rear_wheel_radius + 1., cpShapeFilterNew(this->car_group, 0xffffffff, 0xffffffff), info1);
         cpShape * _shape2 = cpSpacePointQueryNearest(this->space, cpBodyGetPosition(this->front_wheel_body), this->front_wheel_radius + 1., cpShapeFilterNew(this->car_group, 0xffffffff, 0xffffffff), info2);
 
-        return (bool)!(_shape1 && _shape2);
+        delete info1;
+        delete info2;
+
+        bool result = (bool)!(_shape1 && _shape2);;
+
+        cpShapeFree(_shape1);
+        cpShapeFree(_shape2);
+
+        return result;
     }
 
     void go_right() {
@@ -198,7 +217,7 @@ public:
     }
 
     cpVect to_world(const cpVect & vect);
-    vector<cpVect> * get_button_world_coors();
+    vector<cpVect> get_button_world_coors();
 
     string to_string () {
         cpVect l_body_vec = cpBodyGetPosition(car_body);

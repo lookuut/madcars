@@ -9,10 +9,7 @@
 #include <chipmunk/chipmunk_structs.h>
 #include "Match.h"
 #include "CarState.h"
-
-extern "C" {
-    #include "madcars_allocator.h"
-};
+#include "madcars_allocator.h"
 
 #include "SimVariance.h"
 #include <algorithm>    // std::max
@@ -101,7 +98,7 @@ public:
 
     short enemy_step_definer(short my_prev_command, CarState *my_state, CarState *enemy_state, Match *match, int tick, int round);
 
-    int check_future_steps (list<short> * steps, list<short> * enemy_steps, list<CarState*> *states, Match * match, int tick);
+    int check_future_steps (list<short> * steps, list<short> * enemy_steps, list<CarState> *states, Match * match, int tick);
 
     size_t get_heap_size() {
         return heap->allocated_memory_pos;

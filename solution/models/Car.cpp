@@ -225,15 +225,20 @@ cpVect * Car::processed_poly(vector<vector<double>> polygon) {
 }
 
 cpBody * Car::create_car_body() {
-    return cpBodyNew(this->car_body_mass, cpMomentForPoly(this->car_body_mass, this->car_body_poly.size(),  this->processed_poly(this->car_body_poly), cpv(0,0), 0));
+    cpVect * vect = this->processed_poly(this->car_body_poly);
+    cpBody * body = cpBodyNew(this->car_body_mass, cpMomentForPoly(this->car_body_mass, this->car_body_poly.size(), vect, cpv(0,0), 0));
+
+    delete vect;
+
+    return body;
 }
 
 
 cpShape* Car::create_car_shape() {
 
-
-    cpShape * shape = cpPolyShapeNew(this->car_body, (int)this->car_body_poly.size(), this->processed_poly(this->car_body_poly), cpTransformNew(1,0,0,1,0,0), 0);
-
+    cpVect * vect = this->processed_poly(this->car_body_poly);
+    cpShape * shape = cpPolyShapeNew(this->car_body, (int)this->car_body_poly.size(), vect, cpTransformNew(1,0,0,1,0,0), 0);
+    delete vect;
     cpShapeSetFriction(shape, this->car_body_friction);
     cpShapeSetElasticity(shape, this->car_body_elasticity);
     cpShapeSetFilter(shape, cpShapeFilterNew(this->car_group, 4294967295, 4294967295));
@@ -243,7 +248,9 @@ cpShape* Car::create_car_shape() {
 
 cpShape * Car::create_button_shape() {
 
-    cpShape * shape = cpPolyShapeNew(this->car_body, (int)this->button_poly.size(), this->processed_poly(this->button_poly), cpTransformNew(1,0,0,1,0,0), 0);
+    cpVect * vect = this->processed_poly(this->button_poly);
+    cpShape * shape = cpPolyShapeNew(this->car_body, (int)this->button_poly.size(), vect, cpTransformNew(1,0,0,1,0,0), 0);
+    delete vect;
 
     cpShapeSetFilter(shape, cpShapeFilterNew(this->car_group, 4294967295, 4294967295));
     cpShapeSetSensor(shape, true);
@@ -284,13 +291,12 @@ cpVect Car::to_world(const cpVect & vect) {
     return cpTransformPoint(transform , vect);
 }
 
-vector<cpVect> * Car::get_button_world_coors() {
-    vector<cpVect> * transformed = new vector<cpVect>();
+vector<cpVect> Car::get_button_world_coors() {
+    vector<cpVect> transformed = vector<cpVect>();
 
     for (vector<vector<double>>::iterator it = button_poly.begin(); it != button_poly.end(); ++it) {
-        transformed->push_back(to_world(cpv((*it).at(0), (*it).at(1))) );
+        transformed.push_back(to_world(cpv((*it).at(0), (*it).at(1))) );
     }
-
 
     return transformed;
 }

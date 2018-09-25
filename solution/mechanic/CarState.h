@@ -22,7 +22,7 @@ public:
     cpVect rear_wheel_pos;
     double rear_wheel_angle;
 
-    vector<cpVect> * button_shape = NULL;
+    //vector<cpVect>  button_shape ;
 public:
 
     CarState(json & car_state) {
@@ -38,9 +38,6 @@ public:
 
 
     ~CarState() {
-        if (button_shape != NULL) {//memory leak
-            //delete button_shape;
-        }
     }
 
     CarState(const CarState &state) {
@@ -53,14 +50,7 @@ public:
         front_wheel_pos = state.front_wheel_pos;
         front_wheel_angle = state.front_wheel_angle;
 
-
-        if (button_shape != NULL) {
-            delete button_shape;
-        }
-
-        button_shape = new vector<cpVect>[state.button_shape->size()];
-
-        *button_shape = *(state.button_shape);
+        //button_shape = state.button_shape;
     }
 
     CarState(Car * car) {
@@ -73,7 +63,7 @@ public:
         front_wheel_pos = cpBodyGetPosition(car->front_wheel_body);
         front_wheel_angle = cpBodyGetAngle(car->front_wheel_body);
 
-        this->button_shape = car->get_button_world_coors();
+        //this->button_shape = car->get_button_world_coors();
     }
 
     bool is_equal (Car * car) {
@@ -95,10 +85,6 @@ public:
 
     string to_string() {
         return std::to_string(body_pos.x) + " " + std::to_string(body_pos.y) + " " + std::to_string(body_angle);
-    }
-
-    vector<cpVect> * get_button_shape() {
-        return this->button_shape;
     }
 
     static cpVect line_intersect(cpVect fLineStart, cpVect fLineEnd, cpVect sLineStart, cpVect sLineEnd) {

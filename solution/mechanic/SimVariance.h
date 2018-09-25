@@ -47,50 +47,6 @@ public :
 
     static bool deleteAll( CarState * theElement ) { delete theElement; return true; }
 
-    /**
-     * is given state better then current
-     */
-    bool is_weakness(int c_tick, Car *car, Car * enemy_car) {
-
-        /*
-        if (this->tick > c_tick) {
-            return true;
-        } else if (this->tick < c_tick) {
-            return false;
-        }*/
-
-        bool is_planning = car->is_planning();
-
-
-        //remove this
-        vector<cpVect> * c_button_coors = car->get_button_world_coors();
-        vector<cpVect> * button_coors = my_state->get_button_shape();
-
-        cpAssertHard(button_coors != NULL, "button coors is null at sim variance");
-
-        //temporary boolshit
-
-        auto c_min_y = std::min_element( c_button_coors->begin(), c_button_coors->end(),
-                                     []( const cpVect &a, const cpVect &b )
-                                     {
-                                         return a.y > b.y;
-                                     } );
-
-        auto min_y = std::min_element( button_coors->begin(), button_coors->end(),
-                                           []( const cpVect &a, const cpVect &b )
-                                           {
-                                               return a.y > b.y;
-                                           } );
-
-        delete c_button_coors;
-
-        double c_distance = cpvlength( cpvsub(cpBodyGetPosition(car->car_body), cpBodyGetPosition(enemy_car->car_body)));
-        double distance = cpvlength( cpvsub(my_state->body_pos, enemy_state->body_pos));
-
-        return min_y->y < c_min_y->y;
-        //return (c_tick >= Constants::TICKS_TO_DEADLINE ? min_y->y < c_min_y->y : distance > c_distance);
-    }
-
     list<short> get_steps() {
         return steps;
     }

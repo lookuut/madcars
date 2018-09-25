@@ -1,13 +1,17 @@
 
-//#define RELEASE 1
-#define LOCAL_RUNNER 1
+#define RELEASE 1
+//#define LOCAL_RUNNER 1
 //#define EMULATION 1
 //#define FILE_STREAM 1
 #include <bits/stdc++.h>
 #include <iostream>
+#include <thread>         // std::this_thread::sleep_for
+#include <chrono>
 #include "../../nlohmann/json.hpp"
 
 #include "mechanic/Game.h"
+#include <unistd.h>
+
 
 #include "utils/ShapeCounter.h"
 #include <chipmunk/chipmunk.h>
@@ -16,48 +20,7 @@
 #include "utils/easylogging++.h"
 INITIALIZE_EASYLOGGINGPP
 
-
 using namespace std;
-
-#define PI 3.14159265358979323846264338327950288
-
-short smart_guy(json & state) {
-    string input_type = state["type"].get<std::string>();
-
-    auto params = state["params"];
-    auto my_car = params["my_car"];
-    auto enemy_car = params["enemy_car"];
-    auto my_pos = my_car[0];
-    auto enemy_pos = enemy_car[0];
-    short command = 2;
-
-    // check my and enemy position and go to the enemy
-
-    if(my_pos[0].get<double>() > enemy_pos[0].get<double>()) {
-        command = 0;
-    } else {
-        command = 1;
-    }
-    // roll over  in air prevention (this feature can lead to death)
-    double my_angle = my_car[1].get<double>();
-    // normalize angle
-    while (my_angle > PI) {
-        my_angle -= 2.0 * PI;
-    }
-    while (my_angle < -PI) {
-        my_angle += 2.0 * PI;
-    }
-
-    if (my_angle > PI / 4.0) {
-        //cerr << "Uhh!" << endl;
-        command = 0;
-    } else if (my_angle < -PI / 4.0) {
-        //cerr << "Ahh!" << endl;
-        command = 1;
-    }
-
-    return command;
-}
 
 int main() {
 
@@ -78,7 +41,7 @@ int main() {
     Game game = Game();
 
 #ifdef RELEASE
-    InputSource input(input_stream_type::input_stream, false);
+    //InputSource input(input_stream_type::input_stream, false);
 #endif
 
 #ifdef LOCAL_RUNNER
@@ -92,12 +55,21 @@ int main() {
 #ifdef FILE_STREAM
     InputSource input(input_stream_type::file_stream, false);
 #endif
+    long micros_sum = 0;
 
+    short command;
+    string message = "";
     string input_string = "";
-    while (true) {
-        try {
-
+    try {
+        while (true) {
+            system_clock::time_point start = system_clock::now();
+#ifndef RELEASE
             input_string = input.get_tick();
+#endif
+
+#ifdef RELEASE
+            getline(cin, input_string);
+#endif
             if (input_string == "") {
                 break;
             }
@@ -105,62 +77,41 @@ int main() {
             auto input_json = nlohmann::json::parse(input_string);
 
             if (input_json["type"].get<string>() == "new_match") {
-
+#ifndef RELEASE
                 string tick_string = input.get_tick();
+#endif
 
+#ifdef RELEASE
+                string tick_string;
+                getline(cin, tick_string);
+#endif
                 auto cars_config = nlohmann::json::parse(tick_string);
-
                 game.next_match(input_json, cars_config);
                 game.forecast(-1);
 
-                game.send_command(game.get_first_step(), "First step");
+                command = game.get_first_step();
+                message = "First step";
             } else if (input_json["type"].get<string>() == "tick") {
-                game.tick(input_json);
+                command = game.tick(input_json);
             }
 
-        } catch (const std::exception& e) {
+            int micros = 0;
+
+            message = "Round " + std::to_string(game.round) + " tick " + std::to_string(game.match_tick) +
+                      " tick micros sum " + std::to_string((double)game.micro_sum / 1000000.0) + " sum of micros " +
+                      std::to_string((double)micros_sum / 1000.0) + " micros " + std::to_string(micros_sum);
+            game.send_command(command, message);
+
+            system_clock::time_point end = system_clock::now();
+            micros = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+            micros_sum += micros;
 #ifdef LOCAL_RUNNER
-            throw ;
+            LOG(INFO) << message;
 #endif
-#ifdef FILE_STREAM
-            throw ;
-#endif
-
-            auto input_json = nlohmann::json::parse(input_string);
-            short smart_command = smart_guy(input_json);
-
-            game.send_command(smart_command, "Smart guy action");
-            game.run_empty(smart_command);
-
-
-            while (true) {
-                input_string = input.get_tick();
-                auto input_json = nlohmann::json::parse(input_string);
-
-                if (input_json["type"].get<string>() == "new_match") {
-
-                    string tick_string = input.get_tick();
-
-                    auto cars_config = nlohmann::json::parse(tick_string);
-
-                    game.next_match(input_json, cars_config);
-
-                    for (int i = 0; i <= Constants::MATCH_START_WAIT_TICKS; i++) {
-                        game.add_future_step(Constants::MATCH_START_STEP);
-                    }
-
-                    game.send_command(Constants::MATCH_START_STEP, "First step");
-                    break;
-
-                } else {
-                    short smart_command = smart_guy(input_json);
-
-                    game.send_command(smart_command, "Smart guy action");
-                    game.run_empty(smart_command);
-                }
-            }
-
         }
+    } catch (const std::exception &e) {
+        game.send_command(Constants::CAR_STOP_COMMAND, e.what());
+        throw;
     }
 
     return 0;

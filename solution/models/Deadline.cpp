@@ -17,6 +17,7 @@ Deadline::Deadline(short type, double max_lenght, double max_height) {
     polyVect[3] = cpv(0., -Deadline::deadline_height);
 
     this->line = cpPolyShapeNew(body, 4, polyVect, cpTransformNew(1, 0, 0, 1, 0, 0), 0.);
+    delete polyVect;
 
     cpShapeSetSensor(this->line, true);
     cpBodySetPosition(this->line->body, cpv(0,  ( type == ASC ? 10  : max_height - 10)));

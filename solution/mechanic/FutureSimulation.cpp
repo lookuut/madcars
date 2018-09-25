@@ -4,13 +4,13 @@
 
 #include "FutureSimulation.h"
 
-std::tuple<int, list<short>, list<CarState *>> FutureSimulation::recursive_run(
+std::tuple<int, list<short>, list<CarState>> FutureSimulation::recursive_run(
         list<short> steps,
         int tick,
         int deep,
         list<short> * enemy_steps,
         list<short>::iterator &enemy_step_pos,
-        list<CarState *> * step_states,
+        list<CarState> * step_states,
         list<short> my_start_commands,
         list<short> enemy_start_commands
 ) {
@@ -21,13 +21,13 @@ std::tuple<int, list<short>, list<CarState *>> FutureSimulation::recursive_run(
 
     int max_win_count = -10000000;
     int win_count_sum = 0;
-    list<short> * max_win_count_commands;
-    list<CarState * > * max_win_count_states;
+    list<short> max_win_count_commands;
+    list<CarState> max_win_count_states;
 
     for (short command = 0; command <= Constants::STEP_MAX_SIZE; command++) {
 
-        list<short> * cur_commands = new list<short>;
-        list<CarState *> * cur_states = new list<CarState*>;
+        list<short> cur_commands;
+        list<CarState> cur_states;
 
         int win_count = 0;
         copy_heap();
@@ -41,7 +41,7 @@ std::tuple<int, list<short>, list<CarState *>> FutureSimulation::recursive_run(
             }
         }
 
-        list<CarState *>::iterator step_states_tail = (step_states->size() > 0 ? --step_states->end() : step_states->begin());
+        list<CarState>::iterator step_states_tail = (step_states->size() > 0 ? --step_states->end() : step_states->begin());
 
         my_player->set_dead(false);
         enemy_player->set_dead(false);
@@ -61,14 +61,14 @@ std::tuple<int, list<short>, list<CarState *>> FutureSimulation::recursive_run(
         for(int command_number = 0; command_number < std::max(s_size, f_size); command_number++, step++) {
 
             steps.push_back(my_player->get_first_command());
-            cur_commands->push_back(my_player->get_first_command());
+            cur_commands.push_back(my_player->get_first_command());
 
             match->tick(tick + step);
 
             cpSpaceStep(match->get_space(), Constants::SPACE_TICK);
 
-            step_states->push_back(new CarState(my_player->car));
-            cur_states->push_back(new CarState(my_player->car));
+            step_states->push_back(CarState(my_player->car));
+            cur_states.push_back(CarState(my_player->car));
 
             if (enemy_player->is_dead() && !my_player->is_dead()) {/// find situation where we win
                 win = true;
@@ -95,8 +95,8 @@ std::tuple<int, list<short>, list<CarState *>> FutureSimulation::recursive_run(
                     list<short>());
 
             win_count += std::get<int>(prev);
-            cur_commands->splice(cur_commands->end(), std::get<list<short>>(prev));
-            cur_states->splice(cur_states->end(), std::get<list<CarState*>>(prev));
+            cur_commands.splice(cur_commands.end(), std::get<list<short>>(prev));
+            cur_states.splice(cur_states.end(), std::get<list<CarState>>(prev));
         }
 
 
@@ -104,14 +104,9 @@ std::tuple<int, list<short>, list<CarState *>> FutureSimulation::recursive_run(
             max_win_count = win_count;
             max_win_count_commands = cur_commands;
             max_win_count_states = cur_states;
-        } else {
-            delete cur_commands;
-            cur_states->remove_if(deleteAll);
-            delete cur_states;
         }
 
-        for (std::list<CarState*>::iterator it = --step_states->end(); it != step_states_tail; --it) {
-            delete *it;
+        for (std::list<CarState>::iterator it = --step_states->end(); it != step_states_tail; --it) {
             step_states->erase(it);
         }
 
@@ -124,9 +119,7 @@ std::tuple<int, list<short>, list<CarState *>> FutureSimulation::recursive_run(
         win_count_sum += win_count;
     }
 
-    std::tuple<int, list<short>, list<CarState*>> result{win_count_sum, *max_win_count_commands, *max_win_count_states};
-
-    delete (max_win_count_commands, max_win_count_states);
+    std::tuple<int, list<short>, list<CarState>> result{win_count_sum, max_win_count_commands, max_win_count_states};
 
     return result;
 }
@@ -135,15 +128,14 @@ int FutureSimulation::run() {
 
     list<short>::iterator enemy_steps_iter = enemy_steps->begin();
 
-    list<CarState*>  * step_states = new list<CarState*>();
+    list<CarState> * step_states = new list<CarState>();
 
     auto result = recursive_run(list<short>(), tick, 1, enemy_steps, enemy_steps_iter, step_states, *my_start_commands, *enemy_start_commands);
 
-    step_states->remove_if(deleteAll);
     delete step_states;
 
     this->max_win_count_commands = std::get<list<short>>(result);
-    this->max_win_command_states = std::get<list<CarState*>>(result);
+    this->max_win_command_states = std::get<list<CarState>>(result);
 
     return std::get<0>(result);
 }
@@ -152,6 +144,6 @@ list<short> FutureSimulation::get_steps() {
     return this->max_win_count_commands;
 }
 
-list<CarState*> FutureSimulation::get_states() {
+list<CarState> FutureSimulation::get_states() {
     return this->max_win_command_states;
 }

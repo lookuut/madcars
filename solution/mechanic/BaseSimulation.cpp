@@ -70,13 +70,13 @@ short BaseSimulation::enemy_step_definer(short my_prev_command, CarState *my_sta
 }
 
 
-int BaseSimulation::check_future_steps (list<short> * steps, list<short> * enemy_steps, list<CarState*> *states, Match * match, int tick) {
+int BaseSimulation::check_future_steps (list<short> * steps, list<short> * enemy_steps, list<CarState> *states, Match * match, int tick) {
 
     copy_heap();
 
     list<short>::iterator enemy_step_iter = enemy_steps->begin();
     list<short>::iterator step_iter = steps->begin();
-    list<CarState*>::iterator state_iter = states->begin();
+    list<CarState>::iterator state_iter = states->begin();
 
     int not_correct_tick = 0;
     int step = 0;
@@ -94,7 +94,7 @@ int BaseSimulation::check_future_steps (list<short> * steps, list<short> * enemy
 
         cpSpaceStep(match->get_space(), Constants::SPACE_TICK);
 
-        if (!(*state_iter)->is_equal(match->get_my_player()->get_car())) {
+        if (!(*state_iter).is_equal(match->get_my_player()->get_car())) {
             break;
         }
 

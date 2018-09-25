@@ -30,15 +30,11 @@ private:
 
     cpSpace* space = NULL;
 
-    int round = 0;
-
     BaseSimulation simulation;
 
     list<short> my_future_steps;
-    list<CarState*> my_future_states;
+    list<CarState> my_future_states;
 
-    int match_tick = 0;
-    int micro_sum = 0;
 
     list<Player*> players;
 
@@ -55,8 +51,21 @@ private:
 public:
 
 
+    int round = 0;
+    int match_tick = 0;
+    int micro_sum = 0;
+
     ~Game() {
+        if (my_player != NULL) {
+            delete my_player;
+        }
+
+        if (enemy_player != NULL) {
+            delete enemy_player;
+        }
+
         delete this->current_match;
+        cpSpaceFree(this->space);
     }
 
     Game() {
@@ -72,7 +81,7 @@ private:
     string message = "";
 public:
 
-    vector<int> default_step_size{50, 50 ,50, 50};
+    vector<int> default_step_size{5, 10 ,15, 30, 50, 60};
     vector<int> in_danger_steps_sizes{5, 10, 15};
 
     int last_forecast_size = 0;
@@ -99,19 +108,13 @@ public:
 
         FutureSimulation future_sim(this->current_match, &my_start_steps, &enemy_start_steps, &inversed_enemy_steps, this->match_tick);
 
-        future_sim.set_step_sizes((not_correct_tick <= 0 ? default_step_size : in_danger_steps_sizes));
-        //future_sim.set_step_sizes(default_step_size);
+        //future_sim.set_step_sizes((not_correct_tick <= 0 ? default_step_size : in_danger_steps_sizes));
+        future_sim.set_step_sizes(default_step_size);
         future_sim.run();
 
         #ifdef LOCAL_RUNNER
         LOG(INFO) << "Simulation  ";
         #endif
-
-        if (my_future_states.size() > 0) {
-            my_future_states.remove_if(deleteAll);
-            my_future_states = list<CarState*>();
-        }
-
 
         my_future_steps = future_sim.get_steps();;
         my_future_states = future_sim.get_states();
@@ -119,7 +122,7 @@ public:
         last_forecast_size = my_future_states.size();
     }
 
-    json & tick(json & _config) {
+    short tick(json & _config) {
 
         message = "";
 
@@ -144,25 +147,30 @@ public:
             inversed_enemy_steps.reverse();
             int not_correct_tick = simulation.check_future_steps(&my_future_steps, &inversed_enemy_steps, &my_future_states, current_match, match_tick);
 
+            if ((match_tick % 10 == 0 && match_tick > 10)  || my_future_steps.size() <= 2) {
+#ifdef LOCAL_RUNNER
+                LOG(INFO) << "forecast";
+#endif
+                forecast(-1);
+            }
+            /*
             if (not_correct_tick < my_future_states.size() - 1) {
                 forecast(not_correct_tick);
             } else if ((last_forecast_size > 100 && my_future_steps.size() < last_forecast_size / 2) || my_future_steps.size()  <= 1) {
                 forecast(-1);
-            }
+            }*/
         }
 
 
-#ifdef LOCAL_RUNNER
-        LOG(INFO) << "heap size at tick " << this->match_tick << " "<< simulation.get_heap_size();
-#endif
         short step = get_future_step_to_send();
 
         micros = std::chrono::duration_cast<std::chrono::microseconds>(system_clock::now() - start).count();
         micro_sum += micros;
 
-        send_command(step, "Round = " + to_string(round) + " Tick " + to_string(this->match_tick) + " "+ std::to_string(micro_sum/1000000.0) + " step " + Player::commands[step]  + " calculated in " + std::to_string(micros) + " : " + message);
+        //send_command(step, "Round = " + to_string(round) + " Tick " + to_string(this->match_tick) + " "+ std::to_string(micro_sum/1000000.0) + " step " + Player::commands[step]  + " calculated in " + std::to_string(micros) + " : " + message);
 
         this->match_tick++;
+        return step;
     }
 
 
@@ -252,8 +260,7 @@ public:
             } while (this->current_match->rest_counter > 0);
 
             if (my_future_steps.size() > 0) {
-                my_future_states.remove_if(deleteAll);
-                my_future_states = list<CarState*>();
+                my_future_states = list<CarState>();
 
                 my_future_steps = list<short>();
             }
@@ -330,7 +337,6 @@ public:
         }
     }
 
-
     void add_future_step(short step) {
         my_future_steps.push_back(step);
     }
@@ -343,7 +349,6 @@ public:
         my_future_steps.pop_front();
 
         my_future_states.pop_front();
-
     }
 
     short get_future_step_to_send() {

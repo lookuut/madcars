@@ -10,7 +10,7 @@
 #include <chipmunk/chipmunk_structs.h>
 #include "Match.h"
 #include "CarState.h"
-#include <madcars_allocator.h>
+#include "madcars_allocator.h"
 #include "SimVariance.h"
 #include <algorithm>    // std::max
 #include "BaseSimulation.h"
@@ -31,17 +31,17 @@ private:
     int tick;
     int max_deep;
     list<short> max_win_count_commands;
-    list<CarState*>  max_win_command_states;
+    list<CarState> max_win_command_states;
 
     int max_win_count = -100000;
 
-    std::tuple<int, list<short>, list<CarState*>> recursive_run(
+    std::tuple<int, list<short>, list<CarState>> recursive_run(
             list<short> steps,
             int tick,
             int deep,
             list<short> * enemy_steps,
             list<short>::iterator &enemy_step_pos,
-            list<CarState *> * step_states,
+            list<CarState> * step_states,
             list<short> my_start_commands,
             list<short> enemy_start_commands
     );
@@ -57,13 +57,13 @@ public:
         this->enemy_steps = enemy_steps;
         this->tick = tick;
         this->max_deep = this->simulation_step_sizes.size();
-        this->max_win_command_states = list<CarState*>();
+        this->max_win_command_states = list<CarState>();
     }
 
     int run ();
 
     list<short> get_steps();
-    list<CarState*> get_states();
+    list<CarState> get_states();
 };
 
 
