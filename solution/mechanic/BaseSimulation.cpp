@@ -39,6 +39,7 @@ list<short> BaseSimulation::win_definer(short my_command, short winner, Match *m
 
 short BaseSimulation::enemy_step_definer(short my_prev_command, CarState *my_state, CarState *enemy_state, Match *match, int tick, int round) {
 
+
     Player * my_player = match->get_my_player();
     Player * enemy_player = match->get_enemy_player();
 
@@ -54,6 +55,7 @@ short BaseSimulation::enemy_step_definer(short my_prev_command, CarState *my_sta
         copy_heap();
 
         cpSpaceStep(match->get_space(), Constants::SPACE_TICK);
+
 
         if (my_state->is_equal(my_player->get_car()) && enemy_state->is_equal(enemy_player->get_car())) {
             restore_heap();

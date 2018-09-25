@@ -146,10 +146,10 @@ public:
         cpShape * _shape1 = cpSpacePointQueryNearest(this->space, cpBodyGetPosition(this->rear_wheel_body), this->rear_wheel_radius + 1., filter1, info1);
         cpShape * _shape2 = cpSpacePointQueryNearest(this->space, cpBodyGetPosition(this->front_wheel_body), this->front_wheel_radius + 1., filter2, info2);
 
+        bool result = (bool)!(_shape1 || _shape2);
+
         delete info1;
         delete info2;
-
-        bool result = (bool)!(_shape1 || _shape2);
 
         cpShapeFree(_shape1);
         cpShapeFree(_shape2);

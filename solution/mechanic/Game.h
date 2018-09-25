@@ -81,7 +81,7 @@ private:
     string message = "";
 public:
 
-    vector<int> default_step_size{5, 10 ,15, 30, 50, 60};
+    vector<int> default_step_size{3, 9,  12,  50,  50};
     vector<int> in_danger_steps_sizes{5, 10, 15};
 
     int last_forecast_size = 0;

@@ -3,6 +3,7 @@
 //#define LOCAL_RUNNER 1
 //#define EMULATION 1
 //#define FILE_STREAM 1
+
 #include <bits/stdc++.h>
 #include <iostream>
 #include <thread>         // std::this_thread::sleep_for
@@ -18,6 +19,7 @@
 #include "mechanic/InputSource.h"
 
 #include "utils/easylogging++.h"
+
 INITIALIZE_EASYLOGGINGPP
 
 using namespace std;

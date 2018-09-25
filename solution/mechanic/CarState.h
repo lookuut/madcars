@@ -22,7 +22,7 @@ public:
     cpVect rear_wheel_pos;
     double rear_wheel_angle;
 
-    //vector<cpVect>  button_shape ;
+    vector<cpVect> button_shape;
 public:
 
     CarState(json & car_state) {
@@ -36,10 +36,6 @@ public:
         front_wheel_angle = car_state[4][2].get<double>();
     }
 
-
-    ~CarState() {
-    }
-
     CarState(const CarState &state) {
         body_pos = state.body_pos;
         body_angle = state.body_angle;
@@ -50,7 +46,7 @@ public:
         front_wheel_pos = state.front_wheel_pos;
         front_wheel_angle = state.front_wheel_angle;
 
-        //button_shape = state.button_shape;
+        button_shape = state.button_shape;
     }
 
     CarState(Car * car) {
@@ -63,7 +59,11 @@ public:
         front_wheel_pos = cpBodyGetPosition(car->front_wheel_body);
         front_wheel_angle = cpBodyGetAngle(car->front_wheel_body);
 
-        //this->button_shape = car->get_button_world_coors();
+        this->button_shape = car->get_button_world_coors();
+    }
+
+    vector<cpVect> get_button_shape() const {
+        return button_shape;
     }
 
     bool is_equal (Car * car) {

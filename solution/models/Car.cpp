@@ -295,7 +295,7 @@ vector<cpVect> Car::get_button_world_coors() {
     vector<cpVect> transformed = vector<cpVect>();
 
     for (vector<vector<double>>::iterator it = button_poly.begin(); it != button_poly.end(); ++it) {
-        transformed.push_back(to_world(cpv((*it).at(0), (*it).at(1))) );
+        transformed.push_back(to_world(cpv((*it).at(0), (*it).at(1))));
     }
 
     return transformed;
