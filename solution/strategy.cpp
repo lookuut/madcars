@@ -41,7 +41,7 @@ int main() {
     Game game = Game();
 
 #ifdef RELEASE
-    //InputSource input(input_stream_type::input_stream, false);
+    InputSource input(input_stream_type::input_stream, false);
 #endif
 
 #ifdef LOCAL_RUNNER
@@ -63,13 +63,8 @@ int main() {
     try {
         while (true) {
             system_clock::time_point start = system_clock::now();
-#ifndef RELEASE
             input_string = input.get_tick();
-#endif
 
-#ifdef RELEASE
-            getline(cin, input_string);
-#endif
             if (input_string == "") {
                 break;
             }
@@ -77,14 +72,8 @@ int main() {
             auto input_json = nlohmann::json::parse(input_string);
 
             if (input_json["type"].get<string>() == "new_match") {
-#ifndef RELEASE
                 string tick_string = input.get_tick();
-#endif
 
-#ifdef RELEASE
-                string tick_string;
-                getline(cin, tick_string);
-#endif
                 auto cars_config = nlohmann::json::parse(tick_string);
                 game.next_match(input_json, cars_config);
                 game.forecast(-1);
@@ -108,7 +97,7 @@ int main() {
 #ifdef LOCAL_RUNNER
             LOG(INFO) << message;
 #endif
-        }
+            }
     } catch (const std::exception &e) {
         game.send_command(Constants::CAR_STOP_COMMAND, e.what());
         throw;
