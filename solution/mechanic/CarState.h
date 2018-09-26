@@ -21,7 +21,7 @@ public:
 
     cpVect rear_wheel_pos;
     double rear_wheel_angle;
-
+    bool is_touch_map = false;
     vector<cpVect> button_shape;
 public:
 
@@ -47,6 +47,7 @@ public:
         front_wheel_angle = state.front_wheel_angle;
 
         button_shape = state.button_shape;
+        is_touch_map = state.is_touch_map;
     }
 
     CarState(Car * car) {
@@ -60,6 +61,7 @@ public:
         front_wheel_angle = cpBodyGetAngle(car->front_wheel_body);
 
         this->button_shape = car->get_button_world_coors();
+        is_touch_map = car->is_touch_map();
     }
 
     vector<cpVect> get_button_shape() const {

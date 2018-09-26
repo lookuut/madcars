@@ -33,7 +33,7 @@ private:
     BaseSimulation simulation;
 
     list<short> my_future_steps;
-    list<CarState> my_future_states;
+    //list<CarState> my_future_states;
 
 
     list<Player*> players;
@@ -81,10 +81,12 @@ private:
     string message = "";
 public:
 
-    vector<int> default_step_size{3, 9,  12,  50,  50};
-    vector<int> in_danger_steps_sizes{5, 10, 15};
+    vector<int> current_step_sizes;
 
-    int last_forecast_size = 0;
+    vector<int> butt_beware{4, 4, 4, 4, 4};
+    vector<int> default_step_size{4, 8, 16, 32, 64};
+
+    vector<int> in_danger_steps_sizes{5, 10, 15};
 
     void forecast(int not_correct_tick) {
 
@@ -108,18 +110,17 @@ public:
 
         FutureSimulation future_sim(this->current_match, &my_start_steps, &enemy_start_steps, &inversed_enemy_steps, this->match_tick);
 
-        //future_sim.set_step_sizes((not_correct_tick <= 0 ? default_step_size : in_danger_steps_sizes));
-        future_sim.set_step_sizes(default_step_size);
+        future_sim.set_step_sizes(current_step_sizes);
         future_sim.run();
 
         #ifdef LOCAL_RUNNER
         LOG(INFO) << "Simulation  ";
         #endif
 
-        my_future_steps = future_sim.get_steps();;
-        my_future_states = future_sim.get_states();
+        list<short> future_steps = future_sim.get_steps();
+        my_future_steps = list<short>();
 
-        last_forecast_size = my_future_states.size();
+        my_future_steps.assign(future_steps.begin(), std::next(future_steps.begin() ,  std::min(20, (int)future_steps.size() ) ) );
     }
 
     short tick(json & _config) {
@@ -129,12 +130,12 @@ public:
         int micros = 0;
         system_clock::time_point start = system_clock::now();
 
-        CarState * enemy_car_state = new CarState(_config["params"]["enemy_car"]);
+        CarState enemy_car_state(_config["params"]["enemy_car"]);
         CarState my_car_state(_config["params"]["my_car"]);
 
         if (match_tick >= 1) {
 
-            short prev_enemy_step = simulation.enemy_step_definer(get_first_step(), &my_car_state, enemy_car_state, current_match, this->match_tick, this->round);
+            short prev_enemy_step = simulation.enemy_step_definer(get_first_step(), &my_car_state, &enemy_car_state, current_match, this->match_tick, this->round);
             first_step_applied();
 
             enemy_steps.push_back(prev_enemy_step);
@@ -145,29 +146,16 @@ public:
 
             list<short> inversed_enemy_steps = enemy_steps;
             inversed_enemy_steps.reverse();
-            int not_correct_tick = simulation.check_future_steps(&my_future_steps, &inversed_enemy_steps, &my_future_states, current_match, match_tick);
 
-            if ((match_tick % 10 == 0 && match_tick > 10)  || my_future_steps.size() <= 2) {
-#ifdef LOCAL_RUNNER
-                LOG(INFO) << "forecast";
-#endif
+            if (my_future_steps.size() <= 10) {
                 forecast(-1);
             }
-            /*
-            if (not_correct_tick < my_future_states.size() - 1) {
-                forecast(not_correct_tick);
-            } else if ((last_forecast_size > 100 && my_future_steps.size() < last_forecast_size / 2) || my_future_steps.size()  <= 1) {
-                forecast(-1);
-            }*/
         }
-
 
         short step = get_future_step_to_send();
 
         micros = std::chrono::duration_cast<std::chrono::microseconds>(system_clock::now() - start).count();
         micro_sum += micros;
-
-        //send_command(step, "Round = " + to_string(round) + " Tick " + to_string(this->match_tick) + " "+ std::to_string(micro_sum/1000000.0) + " step " + Player::commands[step]  + " calculated in " + std::to_string(micros) + " : " + message);
 
         this->match_tick++;
         return step;
@@ -260,7 +248,7 @@ public:
             } while (this->current_match->rest_counter > 0);
 
             if (my_future_steps.size() > 0) {
-                my_future_states = list<CarState>();
+                //my_future_states = list<CarState>();
 
                 my_future_steps = list<short>();
             }
@@ -335,6 +323,11 @@ public:
                 addConstraitToSpace(this->space, (*motor));
             }
         }
+
+        current_step_sizes = default_step_size;
+        if (current_match->butt_beware()) {
+            current_step_sizes = butt_beware;
+        }
     }
 
     void add_future_step(short step) {
@@ -348,7 +341,7 @@ public:
     void first_step_applied() {
         my_future_steps.pop_front();
 
-        my_future_states.pop_front();
+        //my_future_states.pop_front();
     }
 
     short get_future_step_to_send() {
@@ -388,6 +381,11 @@ public:
         cpSpaceStep(current_match->get_space(), Constants::SPACE_TICK);
         this->match_tick++;
     }
+
+    Match * get_current_match() {
+        return current_match;
+    }
+
 };
 
 

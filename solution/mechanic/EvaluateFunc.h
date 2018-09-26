@@ -5,7 +5,7 @@
 #ifndef MADCARS_EVALUATEFUNC_H
 #define MADCARS_EVALUATEFUNC_H
 
-
+#include "Match.h"
 #include "CarState.h"
 
 class EvaluateFunc {
@@ -17,13 +17,20 @@ private :
     double best_decision_height;
     int min_tick = INT32_MAX;
     char is_win = -1;
+    Match * match;
 public:
 
     EvaluateFunc() {
+
+    }
+
+    EvaluateFunc(Match * match) {
+        this->match = match;
     }
 
 
     void evaluate(int tick, char is_win, const CarState state, const list<short> commands, const list<CarState> states) {
+
 
         if (is_win < this->is_win) {
             return;
@@ -33,8 +40,20 @@ public:
         auto min_point = std::min_element( button_shape.begin(), button_shape.end(),
                                            []( const cpVect &a, const cpVect &b )
                                            {
-                                               return a.y > b.y;
+                                               return a.y < b.y;
                                            } );
+
+
+        if (match->butt_beware()) {
+
+            if (is_win >= 0 && min_point->y > best_decision_height && state.is_touch_map == true) {
+                best_decision_commands = commands;
+                best_decision_states = states;
+                best_decision_height = min_point->y;
+            }
+
+            return;
+        }
 
         this->is_win = is_win;
 

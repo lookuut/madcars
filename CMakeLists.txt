@@ -9,6 +9,7 @@ set(CMAKE_CXX_FLAGS "-std=c++17 -O3 -m64 -pipe -w -pthread")
 set(CMAKE_C_FLAGS "-std=gnu99 -ffast-math -DCHIPMUNK_FFI -g -DCP_USE_CGPOINTS=0 -DNDEBUG -fPIC -O3 -m64")
 
 #remove after debug
+#
 #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
 #set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=leak -g")

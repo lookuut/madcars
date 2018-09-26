@@ -29,6 +29,7 @@ public:
     static constexpr double max_height = 800.;
 
     Map(const json &segments, cpSpace *space) {
+
         create_box(space);
 
         for (auto it = segments.begin(); it != segments.end(); ++it)

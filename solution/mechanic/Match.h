@@ -28,6 +28,8 @@ private:
     list<car_objects_type*> car_objects;
     Map * map;
     list<Player*> players;
+    int map_id;
+
 public:
     list<Player*> dead_players;
 
@@ -51,10 +53,10 @@ public:
 
         int ally_modification = tick_config["params"]["my_car"][2].get<int>();
 
-
+        this->map_id = world_config["params"]["proto_map"]["external_id"];
 
         if (ally_modification == 1) {
-            Car * allyCar = new Car(world_config["params"]["proto_car"], 2, ally_modification, space);
+            Car * allyCar = new Car(world_config["params"]["proto_car"], 2, ally_modification, space, map);
 
             cpVect ally_car_start_pos = cpv(tick_config["params"]["my_car"][0][0].get<double>(), tick_config["params"]["my_car"][0][1].get<double>());
 
@@ -62,7 +64,7 @@ public:
             this->my_player->clear_command_queue();
             this->my_player->set_dead(false);
 
-            Car * enemyCar = new Car(world_config["params"]["proto_car"], 1, tick_config["params"]["enemy_car"][2].get<int>(), space);
+            Car * enemyCar = new Car(world_config["params"]["proto_car"], 1, tick_config["params"]["enemy_car"][2].get<int>(), space, map);
 
             cpVect enemy_car_start_pos = cpv(tick_config["params"]["enemy_car"][0][0].get<double>(), tick_config["params"]["enemy_car"][0][1].get<double>());
 
@@ -83,7 +85,7 @@ public:
             car_objects.push_back(allyCar->get_objects_for_space_at(ally_car_start_pos));
             car_objects.push_back(enemyCar->get_objects_for_space_at(enemy_car_start_pos));
         } else {
-            Car * enemyCar = new Car(world_config["params"]["proto_car"], 1, tick_config["params"]["enemy_car"][2].get<int>(), space);
+            Car * enemyCar = new Car(world_config["params"]["proto_car"], 1, tick_config["params"]["enemy_car"][2].get<int>(), space, map);
 
             cpVect enemy_car_start_pos = cpv(tick_config["params"]["enemy_car"][0][0].get<double>(), tick_config["params"]["enemy_car"][0][1].get<double>());
 
@@ -91,7 +93,7 @@ public:
             this->enemy_player->clear_command_queue();
             this->enemy_player->set_dead(false);
 
-            Car * allyCar = new Car(world_config["params"]["proto_car"], 2, ally_modification, space);
+            Car * allyCar = new Car(world_config["params"]["proto_car"], 2, ally_modification, space, map);
 
             cpVect ally_car_start_pos = cpv(tick_config["params"]["my_car"][0][0].get<double>(), tick_config["params"]["my_car"][0][1].get<double>());
 
@@ -193,6 +195,21 @@ public:
         return this->enemy_player;
     }
 
+    int get_map_id() {
+        return map_id;
+    }
+
+    bool butt_beware() {
+        return (get_map_id() == 6 || get_map_id() == 1 || get_map_id() == 5) && (get_my_player()->get_car()->get_external_id() == 2);
+    }
+
+    int butt_beware_wait_tick() {
+        if (get_map_id() == 6) {
+            return 100;
+        } else if (get_map_id() == 1 || get_map_id() == 5) {
+            return 40;
+        }
+    }
 };
 
 

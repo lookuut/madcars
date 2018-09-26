@@ -15,11 +15,12 @@ void FutureSimulation::recursive_run(
         list<short> enemy_start_commands
 ) {
 
-    char win = 0;
+
     list<short> prev_command_steps = steps;
     list<short> win_stats;
 
     for (short command = 0; command <= Constants::STEP_MAX_SIZE; command++) {
+        char win = 0;
 
         copy_heap();
 

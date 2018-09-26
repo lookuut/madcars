@@ -8,7 +8,10 @@
 #include <utility>"
 #include <iostream>
 
-Car::Car(const json & car_config, int car_group, int modification, cpSpace *space) {
+Car::Car(const json & car_config, int car_group, int modification, cpSpace *space, Map * map) {
+
+    this->external_id = car_config["external_id"].get<int>();
+    this->map = map;
     this->motors = list<cpConstraint*>();
     this->space = space;
     this->car_group = car_group;
@@ -295,8 +298,31 @@ vector<cpVect> Car::get_button_world_coors() {
     vector<cpVect> transformed = vector<cpVect>();
 
     for (vector<vector<double>>::iterator it = button_poly.begin(); it != button_poly.end(); ++it) {
-        transformed.push_back(to_world(cpv((*it).at(0), (*it).at(1))));
+        transformed.push_back(to_world(cpv((*it).at(0) *  this->x_modification, (*it).at(1))));
     }
 
     return transformed;
+}
+
+bool Car::is_touch_map() {
+
+    list<cpShape * > map_segments = map->get_objects_for_space();
+
+    vector<vector<double>>::iterator prev = std::prev(car_body_poly.end(), 2);
+
+    for(vector<vector<double>>::iterator it = car_body_poly.begin(); it != prev; ++it) {
+
+        vector<double> next = *std::next(it);
+        cpVect t_point1 = cpTransformPoint(this->car_body->transform, cpv((*it).at(0) * x_modification, (*it).at(1)));
+        cpVect t_point2 = cpTransformPoint(this->car_body->transform, cpv(next.at(0) * x_modification, next.at(1)));
+
+        for (list<cpShape*>::iterator it = map_segments.begin(); it != map_segments.end(); ++it) {
+
+            if (cpBBIntersectsSegment((*it)->bb, t_point1, t_point2)) {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }

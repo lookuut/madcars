@@ -11,7 +11,7 @@
 #include <chipmunk/chipmunk_structs.h>
 #include <iostream>
 #include "../../../nlohmann/json.hpp"
-
+#include "Map.h"
 
 using namespace nlohmann;
 using namespace std;
@@ -40,6 +40,7 @@ typedef struct car_objects_type car_objects_type;
 class Car {
 private:
 
+    int external_id;
     cpSpace * space;
     int car_group;
     int x_modification;
@@ -105,7 +106,7 @@ private:
 
     short button_collision_type;
     cpSpacePointQueryFunc * point_query_nearest;
-
+    Map * map;
 public:
     cpBody * car_body;
     cpBody * front_wheel_body;
@@ -115,7 +116,7 @@ public:
     static const short FR = 2;
     static const short AWD = 3;
 
-    Car(const json & car_config, int car_group, int direction, cpSpace * space);
+    Car(const json & car_config, int car_group, int direction, cpSpace * space, Map * map);
 
     ~Car() {
         //delete std::get<car_wheel_objects *>(rear_wheel);
@@ -231,6 +232,12 @@ public:
 
         return std::to_string(l_body_vec.x) + " " + std::to_string(l_body_vec.y) + " " + std::to_string(l_body_angle);
     }
+
+    int get_external_id() {
+        return external_id;
+    }
+
+    bool is_touch_map();
 };
 
 #endif //MADCARS_CAR_H

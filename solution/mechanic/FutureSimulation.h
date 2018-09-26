@@ -55,6 +55,7 @@ public:
         this->enemy_start_commands = enemy_start_commands;
         this->enemy_steps = enemy_steps;
         this->tick = tick;
+        this->eva = EvaluateFunc(match);
     }
 
     void run ();
