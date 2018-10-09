@@ -38,7 +38,6 @@ private:
             int deep,
             list<short> * enemy_steps,
             list<short>::iterator &enemy_step_pos,
-            list<CarState> step_states,
             list<short> my_start_commands,
             list<short> enemy_start_commands
     );

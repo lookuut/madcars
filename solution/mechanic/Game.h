@@ -84,9 +84,7 @@ public:
     vector<int> current_step_sizes;
 
     vector<int> butt_beware{4, 4, 4, 4, 4};
-    vector<int> default_step_size{4, 8, 16, 32, 64};
-
-    vector<int> in_danger_steps_sizes{5, 10, 15};
+    vector<int> default_step_size{4, 8, 32, 64};
 
     void forecast(int not_correct_tick) {
 
@@ -120,7 +118,15 @@ public:
         list<short> future_steps = future_sim.get_steps();
         my_future_steps = list<short>();
 
-        my_future_steps.assign(future_steps.begin(), std::next(future_steps.begin() ,  std::min(20, (int)future_steps.size() ) ) );
+        if (!current_match->butt_beware()) {
+            if (future_steps.size() < 20) {//crrepy boolshit
+                for (int i = 0; i <= 20; i++) {
+                    future_steps.push_back(2);
+                }
+            }
+        }
+
+        my_future_steps.assign(future_steps.begin(), std::next(future_steps.begin() ,  std::min(17, (int)future_steps.size() ) ) );
     }
 
     short tick(json & _config) {
@@ -247,12 +253,7 @@ public:
                 this->match_tick++;
             } while (this->current_match->rest_counter > 0);
 
-            if (my_future_steps.size() > 0) {
-                //my_future_states = list<CarState>();
-
-                my_future_steps = list<short>();
-            }
-
+            my_future_steps = list<short>();
             enemy_steps = list<short>();
         }
 
@@ -335,13 +336,12 @@ public:
     }
 
     short get_first_step() {
+
         return my_future_steps.front();
     }
 
     void first_step_applied() {
         my_future_steps.pop_front();
-
-        //my_future_states.pop_front();
     }
 
     short get_future_step_to_send() {

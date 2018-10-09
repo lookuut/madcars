@@ -39,7 +39,7 @@ public:
         if (type == input_stream_type::file_stream) {
             file_stream.open("mad-cars-input.log");
         } else if (type == input_stream_type::emulation) {
-            ifstream visio_file("/home/lookuut/Downloads/visio");
+            ifstream visio_file("/home/lookuut/Downloads/visio (2)");
             string line;
             getline(visio_file, line);
             visio_file.close();

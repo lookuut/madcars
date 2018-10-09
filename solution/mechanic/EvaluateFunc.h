@@ -12,7 +12,6 @@ class EvaluateFunc {
 private :
 
     list<short> best_decision_commands;
-    list<CarState> best_decision_states;
 
     double best_decision_height;
     int min_tick = INT32_MAX;
@@ -29,7 +28,7 @@ public:
     }
 
 
-    void evaluate(int tick, char is_win, const CarState state, const list<short> commands, const list<CarState> states) {
+    void evaluate(int tick, char is_win, const CarState state, const list<short> commands) {
 
 
         if (is_win < this->is_win) {
@@ -48,7 +47,6 @@ public:
 
             if (is_win >= 0 && min_point->y > best_decision_height && state.is_touch_map == true) {
                 best_decision_commands = commands;
-                best_decision_states = states;
                 best_decision_height = min_point->y;
             }
 
@@ -60,15 +58,12 @@ public:
         if (is_win == 1 && tick < min_tick) {
             min_tick = tick;
             best_decision_commands = commands;
-            best_decision_states = states;
             best_decision_height = min_point->y;
         } else if (is_win == 0 && min_point->y > best_decision_height) {
             best_decision_commands = commands;
-            best_decision_states = states;
             best_decision_height = min_point->y;
         } else if (is_win == -1) {
             best_decision_commands = commands;
-            best_decision_states = states;
             best_decision_height = min_point->y;
             this->is_win = 0;
         }
@@ -78,8 +73,8 @@ public:
         return best_decision_commands;
     }
 
-    const list<CarState> get_states() {
-        return best_decision_states;
+    void set_commands(list<short> commands) {
+        best_decision_commands = commands;
     }
 };
 

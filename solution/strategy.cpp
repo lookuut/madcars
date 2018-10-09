@@ -1,8 +1,8 @@
 
 //#define RELEASE 1
-//#define LOCAL_RUNNER 1
+#define LOCAL_RUNNER 1
 //#define EMULATION 1
-#define FILE_STREAM 1
+//#define FILE_STREAM 1
 
 #include <bits/stdc++.h>
 #include <iostream>
@@ -78,7 +78,6 @@ int main() {
 
                 auto cars_config = nlohmann::json::parse(tick_string);
                 game.next_match(input_json, cars_config);
-
 
                 if (game.get_current_match()->butt_beware()) {
                     short balance_command = (cars_config["params"]["my_car"][2] == 1 ? 1 : 0);

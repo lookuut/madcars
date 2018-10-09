@@ -85,6 +85,20 @@ public:
         return delta <= 0.;
     }
 
+    bool is_change(Car * car) {
+        cpVect l_body_vec = cpBodyGetPosition(car->car_body);
+        double l_body_angle = cpBodyGetAngle(car->car_body);
+
+        cpVect l_rear_wheel_body_vec = cpBodyGetPosition(car->rear_wheel_body);
+        cpVect l_front_wheel_body_vec = cpBodyGetPosition(car->front_wheel_body);
+
+        double delta = abs(body_pos.x - l_body_vec.x) + abs(body_pos.y - l_body_vec.y) + abs(body_angle - l_body_angle);
+        delta += abs(rear_wheel_pos.x - l_rear_wheel_body_vec.x) + abs(rear_wheel_pos.y - l_rear_wheel_body_vec.y);
+        delta += abs(front_wheel_pos.x - l_front_wheel_body_vec.x) + abs(front_wheel_pos.y - l_front_wheel_body_vec.y);
+
+        return delta > 1;
+    }
+
     string to_string() {
         return std::to_string(body_pos.x) + " " + std::to_string(body_pos.y) + " " + std::to_string(body_angle);
     }
